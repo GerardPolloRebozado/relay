@@ -9,6 +9,7 @@ struct Styles;
 pub fn Room(id: OwnedRoomId) -> Element {
     rsx! {
         div {
+            class: Styles::container,
             h2 { "Room" }
             div { class: Styles::chat_container,
                 RoomTimeline { class: Styles::message_list, room_id: id.clone() }

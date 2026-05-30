@@ -41,10 +41,14 @@ pub async fn load_client_from_storage() -> Option<Client> {
     let crypto_store = SqliteCryptoStore::open(storage_dir.clone(), passphrase)
         .await
         .ok()?;
+    let event_cache_store = SqliteEventCacheStore::open(storage_dir.clone(), passphrase)
+        .await
+        .ok()?;
 
     let store_config = StoreConfig::new(CrossProcessLockConfig::multi_process("relay"))
         .crypto_store(crypto_store)
-        .state_store(state_store);
+        .state_store(state_store)
+        .event_cache_store(event_cache_store);
 
     let client = Client::builder()
         .homeserver_url(homeserver_url)

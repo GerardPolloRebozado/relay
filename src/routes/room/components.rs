@@ -4,13 +4,11 @@ use crate::state::app_state::AppState;
 use chrono::{TimeZone, Utc};
 use dioxus::prelude::*;
 use dioxus_icons::lucide::Send;
-use futures_util::future::err;
 use futures_util::StreamExt;
 use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
-use matrix_sdk::ruma::{OwnedRoomId, RoomId};
-use matrix_sdk::Room;
+use matrix_sdk::ruma::OwnedRoomId;
 use matrix_sdk_ui::timeline::{RoomExt, VirtualTimelineItem};
-use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[css_module("/src/routes/room/components.css")]
 struct Styles;
@@ -43,15 +41,18 @@ pub fn RoomTimeline(
                 return;
             };
 
-            let timeline = room.timeline_builder().build().await.unwrap();
+            let timeline = Arc::new(room.timeline_builder().build().await.unwrap());
 
             let (initial_items, mut stream) = timeline.subscribe().await;
             messages.set(initial_items);
 
-            // Fetch some history to ensure the timeline isn't empty on entry
-            let _ = timeline.paginate_backwards(20).await;
+            let timeline_clone = timeline.clone();
+            spawn(async move {
+                if let Err(e) = timeline_clone.paginate_backwards(20).await {
+                    eprintln!("Error paginating backwards: {:?}", e);
+                }
+            });
 
-            // Batched diff processing
             while let Some(diff_batch) = stream.next().await {
                 let mut msgs = messages.write();
                 for diff in diff_batch {
@@ -63,23 +64,22 @@ pub fn RoomTimeline(
 
     rsx! {
         div {
-            style: "display: flex; flex-direction: column; gap: 1rem; padding: 1rem; height: 100%; overflow-y: auto;",
+            ..attributes,
 
-            for item in messages.read().iter() {
+            for item in messages.read().iter().rev() {
                 {
                     if let Some(event) = item.as_event() {
                         let sender = event.sender().to_string();
                         let content = event.content();
 
                     if content.is_unable_to_decrypt() {
-                        return rsx! {
-                        div {
-                                        strong { "{sender}: " }
-                                        span { "Unable to decrypt" }
-                                    }
+                        rsx! {
+                            div {
+                                strong { "{sender}: " }
+                                span { "Unable to decrypt" }
                             }
-                    }
-                        if let Some(msg) = content.as_message() {
+                        }
+                    } else if let Some(msg) = content.as_message() {
                             match msg.msgtype() {
                                 MessageType::Text(text) => rsx! {
                                     div {
@@ -192,7 +192,9 @@ pub fn MessageInput(
                     let client = matrix.read().await.client();
                     if let Some(client) = client {
                         if let Some(room) = client.get_room(&cloned_id) {
-                            room.send(content).await;
+                            if let Err(e) = room.send(content).await {
+                                error!("Failed to send message: {:?}", e);
+                            }
                         } else {
                              error!("Cannot get room");
                         }
