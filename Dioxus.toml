@@ -1,9 +1,9 @@
 [application]
-name = "matrix-client"
+name = "Relay"
 
 [web.app]
 # HTML title tag content
-title = "matrix-client"
+title = "Relay"
 
 # include `assets` in web platform
 [web.resource]

@@ -1,5 +1,5 @@
 [package]
-name = "matrix-client"
+name = "Relay"
 version = "0.1.0"
 authors = ["gerardPolloRebozado <gerardit4@gmail.com>"]
 edition = "2021"

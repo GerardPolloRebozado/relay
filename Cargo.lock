@@ -3,6 +3,36 @@
 version = 4
 
 [[package]]
+name = "Relay"
+version = "0.1.0"
+dependencies = [
+ "android-native-keyring-store",
+ "apple-native-keyring-store",
+ "base64",
+ "chrono",
+ "dioxus",
+ "dioxus-i18n",
+ "dioxus-icons",
+ "dioxus-primitives",
+ "env_logger",
+ "futures-util",
+ "hex",
+ "keyring-core",
+ "linux-keyutils-keyring-store",
+ "log",
+ "matrix-sdk",
+ "matrix-sdk-sqlite",
+ "matrix-sdk-ui",
+ "rand 0.9.4",
+ "serde",
+ "serde_json",
+ "sysdirs",
+ "tokio",
+ "uuid",
+ "windows-native-keyring-store",
+]
+
+[[package]]
 name = "accessory"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4319,36 +4349,6 @@ name = "matchit"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47e1ffaa40ddd1f3ed91f717a33c8c0ee23fff369e3aa8772b9605cc1d22f4c3"
-
-[[package]]
-name = "matrix-client"
-version = "0.1.0"
-dependencies = [
- "android-native-keyring-store",
- "apple-native-keyring-store",
- "base64",
- "chrono",
- "dioxus",
- "dioxus-i18n",
- "dioxus-icons",
- "dioxus-primitives",
- "env_logger",
- "futures-util",
- "hex",
- "keyring-core",
- "linux-keyutils-keyring-store",
- "log",
- "matrix-sdk",
- "matrix-sdk-sqlite",
- "matrix-sdk-ui",
- "rand 0.9.4",
- "serde",
- "serde_json",
- "sysdirs",
- "tokio",
- "uuid",
- "windows-native-keyring-store",
-]
 
 [[package]]
 name = "matrix-pickle"
