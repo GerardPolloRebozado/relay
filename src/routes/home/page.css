@@ -1,0 +1,24 @@
+.home_container {
+    padding: 2.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page_title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0 0 2.5rem 0;
+    color: var(--secondary-color-4);
+}
+
+.room_list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.empty_state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--secondary-color-5);
+}
