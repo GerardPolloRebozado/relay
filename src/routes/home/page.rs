@@ -18,12 +18,12 @@ pub fn Home() -> Element {
 
     use_future(move || async move {
         println!("DEBUG: Home component use_future started");
-        let matrix = state.matrix.read().clone();
+        let matrix = state.matrix.cloned();
         
-        let (client, room_list_service) = {
-            let manager = matrix.read().await;
-            (manager.client(), manager.room_list_service())
-        };
+        let (client, room_list_service) = (
+            matrix.client().await,
+            matrix.room_list_service().await,
+        );
 
         let (Some(client), Some(room_list_service)) = (client, room_list_service) else {
             println!("DEBUG: Client or RoomListService missing, redirecting to login");

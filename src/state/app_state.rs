@@ -2,12 +2,10 @@ use crate::services::matrix::client_manager::{MatrixEvent, MatrixManager};
 use dioxus::prelude::*;
 use matrix_sdk_ui::room_list_service::State as RoomListState;
 use matrix_sdk_ui::sync_service::State as SyncState;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 
 #[derive(Clone, Copy)]
 pub struct AppState {
-    pub matrix: Signal<Arc<RwLock<MatrixManager>>>,
+    pub matrix: Signal<MatrixManager>,
     pub is_syncing: Signal<bool>,
     pub is_loaded: Signal<bool>,
     pub first_sync_done: Signal<bool>,
@@ -23,10 +21,9 @@ impl Default for AppState {
 impl AppState {
     pub fn new() -> Self {
         let (manager, mut rx) = MatrixManager::new();
-        let manager = Arc::new(RwLock::new(manager));
 
         let state = Self {
-            matrix: Signal::new(manager.clone()),
+            matrix: Signal::new(manager),
             is_syncing: Signal::new(false),
             is_loaded: Signal::new(false),
             first_sync_done: Signal::new(false),

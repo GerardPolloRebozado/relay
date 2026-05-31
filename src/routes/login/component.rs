@@ -57,22 +57,20 @@ pub fn Login() -> Element {
                                     return;
                                 }
                                 let username = username.unwrap();
+spawn(async move {
+    logging_in.set(true);
+    let manager = app_state.matrix.cloned();
 
-                                spawn(async move {
-                                    logging_in.set(true);
-                                    let matrix = app_state.matrix.read().clone();
-                                    let mut manager = matrix.write().await;
-
-                                    match manager.login(&username, &values.password).await {
-                                        Ok(_) => {
-                                            let _ = manager.start_sync().await;
-                                        }
-                                        Err(e) => {
-                                            println!("Login error: {}", e);
-                                            logging_in.set(false);
-                                        }
-                                    }
-                                });
+    match manager.login(&username, &values.password).await {
+        Ok(_) => {
+            let _ = manager.start_sync().await;
+        }
+        Err(e) => {
+            println!("Login error: {}", e);
+            logging_in.set(false);
+        }
+    }
+});
                             },
                             div { class: Styles::form_group,
                                 Label { html_for: "username", "Username" }

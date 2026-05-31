@@ -1,17 +1,42 @@
 use crate::components::button::Button;
 use crate::components::input::Input;
 use crate::state::app_state::AppState;
-use chrono::{TimeZone, Utc};
+use chrono::{DateTime, Local, TimeZone, Utc};
 use dioxus::prelude::*;
 use dioxus_icons::lucide::Send;
 use futures_util::StreamExt;
+use log::error;
 use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
-use matrix_sdk::ruma::OwnedRoomId;
-use matrix_sdk_ui::timeline::{RoomExt, VirtualTimelineItem};
+use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId};
+use matrix_sdk_ui::eyeball_im::Vector;
+use matrix_sdk_ui::timeline::{RoomExt, TimelineItem, VirtualTimelineItem};
 use std::sync::Arc;
+use uuid::timestamp;
 
 #[css_module("/src/routes/room/components.css")]
 struct Styles;
+
+#[component]
+fn ChatBubble(sender: String, is_me: bool, time_of_event: String, children: Element) -> Element {
+    let alignment_class = if is_me {
+        Styles::my_message
+    } else {
+        Styles::others_message
+    };
+
+    rsx! {
+        div { class: alignment_class,
+            div { class: Styles::message,
+                strong { "{sender}" }
+                {children}
+                p {
+                    class: Styles::event_time,
+                    {time_of_event}
+                }
+            }
+        }
+    }
+}
 
 #[component]
 pub fn RoomTimeline(
@@ -19,22 +44,22 @@ pub fn RoomTimeline(
     #[props(extends=GlobalAttributes)] attributes: Vec<Attribute>,
 ) -> Element {
     let state = use_context::<AppState>();
-    let mut messages = use_signal(Default::default);
+    let mut messages = use_signal(Vector::<Arc<TimelineItem>>::default);
+    let mut current_user_id = use_signal(|| None::<OwnedUserId>);
 
     use_effect(move || {
-        let matrix = state.matrix.read().clone();
+        let matrix = state.matrix.cloned();
         let room_id = room_id.clone();
 
         spawn(async move {
-            let client = {
-                let manager = matrix.read().await;
-                manager.client()
-            };
+            let client = matrix.client().await;
 
             let Some(client) = client else {
                 eprintln!("Client not found");
                 return;
             };
+
+            current_user_id.set(client.user_id().map(|id| id.to_owned()));
 
             let Some(room) = client.get_room(&room_id) else {
                 eprintln!("Room not found");
@@ -63,8 +88,7 @@ pub fn RoomTimeline(
     });
 
     rsx! {
-        div {
-            ..attributes,
+        div { ..attributes,
 
             for item in messages.read().iter().rev() {
                 {
@@ -72,65 +96,61 @@ pub fn RoomTimeline(
                         let sender = event.sender().to_string();
                         let content = event.content();
 
-                    if content.is_unable_to_decrypt() {
-                        rsx! {
-                            div {
-                                strong { "{sender}: " }
-                                span { "Unable to decrypt" }
-                            }
-                        }
-                    } else if let Some(msg) = content.as_message() {
-                            match msg.msgtype() {
-                                MessageType::Text(text) => rsx! {
-                                    div {
-                                        strong { "{sender}: " }
-                                        span { "{text.body}" }
-                                    }
-                                },
-                                MessageType::Image(img) => rsx! {
-                                    div {
-                                        strong { "{sender}: " }
-                                        span {
-                                            style: "font-style: italic; color: gray;",
-                                            "[Image: {img.body}]"
-                                        }
-                                    }
-                                },
-                                MessageType::Video(video) => rsx! {
-                                    div {
-                                        strong { "{sender}: " }
-                                        span {
-                                            style: "font-style: italic; color: gray;",
-                                            "[Video: {video.body}]"
-                                        }
-                                    }
-                                },
-                                _ => rsx! {
-                                    div {
-                                        strong { "{sender}: " }
-                                        span {
-                                            style: "font-style: italic; color: gray;",
-                                            "[Unsupported File]"
-                                        }
-                                    }
-                                },
-                            }
-                        } else if let Some(_sticker) = content.as_sticker() {
+                        //get event hour and minute
+                        let timestamp = event.timestamp();
+                        let datetime: DateTime<Local> = Local.timestamp_millis_opt(timestamp.0.into()).single().unwrap();
+                        let time_of_event = datetime.format("%H:%M").to_string();
+
+                        let is_me = current_user_id
+                            .read()
+                            .as_ref()
+                            .map(|id| id.as_str() == sender)
+                            .unwrap_or(false);
+
+                        if content.as_message().is_some()
+                            || content.is_unable_to_decrypt()
+                            || content.as_sticker().is_some()
+                        {
                             rsx! {
-                                div {
-                                    strong { "{sender}: " }
-                                    span {
-                                        style: "font-style: italic; color: gray;",
-                                        "[Sticker]"
+                                ChatBubble { sender, is_me, time_of_event,
+                                    {
+                                        if let Some(msg) = content.as_message() {
+                                            match msg.msgtype() {
+                                                MessageType::Text(text) => rsx! { span { "{text.body}" } },
+                                                MessageType::Image(img) => rsx! {
+                                                    span {
+                                                        "[Image: {img.body}]"
+                                                    }
+                                                },
+                                                MessageType::Video(video) => rsx! {
+                                                    span {
+                                                        "[Video: {video.body}]"
+                                                    }
+                                                },
+                                                _ => rsx! {
+                                                    span {
+                                                        "[Unsupported File]"
+                                                    }
+                                                },
+                                            }
+                                        } else if content.is_unable_to_decrypt() {
+                                            rsx! { span { "Unable to decrypt" } }
+                                        } else if let Some(_sticker) = content.as_sticker() {
+                                            rsx! {
+                                                span {
+                                                    style: "font-style: italic; color: gray;",
+                                                    "[Sticker]"
+                                                }
+                                            }
+                                        } else {
+                                            rsx! { "" }
+                                        }
                                     }
                                 }
                             }
                         } else {
                             rsx! {
-                                div {
-                                    style: "color: lightgray; font-size: 0.875rem;",
-                                    "System event"
-                                }
+                                div { style: "color: lightgray; font-size: 0.875rem;", "System event" }
                             }
                         }
                     } else if item.is_date_divider() {
@@ -161,6 +181,7 @@ pub fn RoomTimeline(
         }
     }
 }
+
 #[component]
 pub fn MessageInput(
     #[props(extends=GlobalAttributes)] attributes: Vec<Attribute>,
@@ -184,12 +205,12 @@ pub fn MessageInput(
 
                 message_text.set(String::new());
 
-                let matrix = state.matrix.read().clone();
+                let matrix = state.matrix.cloned();
                 let content = RoomMessageEventContent::text_plain(message);
                 let cloned_id = room_id.clone();
 
                 spawn(async move {
-                    let client = matrix.read().await.client();
+                    let client = matrix.client().await;
                     if let Some(client) = client {
                         if let Some(room) = client.get_room(&cloned_id) {
                             if let Err(e) = room.send(content).await {

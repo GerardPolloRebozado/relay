@@ -7,7 +7,7 @@ use matrix_sdk::Client;
 use matrix_sdk_ui::room_list_service::{RoomListService, State as RoomListState};
 use matrix_sdk_ui::sync_service::{State as SyncState, SyncService};
 use std::sync::Arc;
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, RwLock};
 
 #[derive(Clone, Debug)]
 pub enum MatrixEvent {
@@ -17,11 +17,17 @@ pub enum MatrixEvent {
     LoggedOut,
 }
 
+#[derive(Clone)]
 pub struct MatrixManager {
+    inner: Arc<RwLock<MatrixManagerInner>>,
+    event_tx: broadcast::Sender<MatrixEvent>,
+}
+
+#[derive(Default)]
+struct MatrixManagerInner {
     client: Option<Client>,
     sync_service: Option<Arc<SyncService>>,
     room_list_service: Option<Arc<RoomListService>>,
-    event_tx: broadcast::Sender<MatrixEvent>,
 }
 
 impl MatrixManager {
@@ -29,18 +35,21 @@ impl MatrixManager {
         let (tx, rx) = broadcast::channel(100);
         (
             Self {
-                client: None,
-                sync_service: None,
-                room_list_service: None,
+                inner: Arc::new(RwLock::new(MatrixManagerInner {
+                    client: None,
+                    sync_service: None,
+                    room_list_service: None,
+                })),
                 event_tx: tx,
             },
             rx,
         )
     }
 
-    pub async fn load_from_storage(&mut self) -> Option<Client> {
+    pub async fn load_from_storage(&self) -> Option<Client> {
         if let Some(client) = load_client_from_storage().await {
-            self.client = Some(client.clone());
+            let mut inner = self.inner.write().await;
+            inner.client = Some(client.clone());
             let _ = self.event_tx.send(MatrixEvent::ClientLoaded(client.clone()));
             Some(client)
         } else {
@@ -49,7 +58,7 @@ impl MatrixManager {
     }
 
     pub async fn login(
-        &mut self,
+        &self,
         user_id: &UserId,
         password: &str,
     ) -> Result<Client, String> {
@@ -69,19 +78,29 @@ impl MatrixManager {
         let _ = save_homeserver_url(client.homeserver().as_str());
         let _ = save_matrix_session(&client);
 
-        self.client = Some(client.clone());
+        {
+            let mut inner = self.inner.write().await;
+            inner.client = Some(client.clone());
+        }
         let _ = self.event_tx.send(MatrixEvent::ClientLoaded(client.clone()));
         
         Ok(client)
     }
 
-    pub async fn logout(&mut self) {
-        if let Some(sync_service) = self.sync_service.take() {
+    pub async fn logout(&self) {
+        let (sync_service, client) = {
+            let mut inner = self.inner.write().await;
+            let sync_service = inner.sync_service.take();
+            let client = inner.client.take();
+            inner.room_list_service = None;
+            (sync_service, client)
+        };
+
+        if let Some(sync_service) = sync_service {
             let _ = sync_service.stop();
         }
-        self.room_list_service = None;
 
-        if let Some(client) = self.client.take() {
+        if let Some(client) = client {
             let _ = client.logout().await;
         }
 
@@ -89,14 +108,18 @@ impl MatrixManager {
         let _ = self.event_tx.send(MatrixEvent::LoggedOut);
     }
 
-    pub async fn start_sync(&mut self) -> Result<(), String> {
-        let Some(client) = self.client.as_ref() else {
-            return Err("No client available to sync".to_string());
-        };
+    pub async fn start_sync(&self) -> Result<(), String> {
+        let client = {
+            let inner = self.inner.read().await;
+            let Some(client) = inner.client.as_ref().cloned() else {
+                return Err("No client available to sync".to_string());
+            };
 
-        if self.sync_service.is_some() {
-            return Ok(());
-        }
+            if inner.sync_service.is_some() {
+                return Ok(());
+            }
+            client
+        };
 
         println!("DEBUG: Starting SyncService...");
         
@@ -111,8 +134,12 @@ impl MatrixManager {
         );
         
         let room_list_service = sync_service.room_list_service();
-        self.room_list_service = Some(room_list_service.clone());
-        self.sync_service = Some(sync_service.clone());
+        
+        {
+            let mut inner = self.inner.write().await;
+            inner.room_list_service = Some(room_list_service.clone());
+            inner.sync_service = Some(sync_service.clone());
+        }
 
         let event_tx = self.event_tx.clone();
         let mut state_stream = sync_service.state();
@@ -142,15 +169,15 @@ impl MatrixManager {
         Ok(())
     }
 
-    pub fn client(&self) -> Option<Client> {
-        self.client.clone()
+    pub async fn client(&self) -> Option<Client> {
+        self.inner.read().await.client.clone()
     }
 
-    pub fn sync_service(&self) -> Option<Arc<SyncService>> {
-        self.sync_service.clone()
+    pub async fn sync_service(&self) -> Option<Arc<SyncService>> {
+        self.inner.read().await.sync_service.clone()
     }
 
-    pub fn room_list_service(&self) -> Option<Arc<RoomListService>> {
-        self.room_list_service.clone()
+    pub async fn room_list_service(&self) -> Option<Arc<RoomListService>> {
+        self.inner.read().await.room_list_service.clone()
     }
 }

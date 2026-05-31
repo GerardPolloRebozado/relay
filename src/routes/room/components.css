@@ -6,3 +6,26 @@
         flex: 1;
     }
 }
+
+.message {
+    border-radius: 2rem;
+    background-color: var(--primary-color-2);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.my_message {
+    display: flex;
+    align-self: flex-end;
+}
+
+.others_message {
+    display: flex;
+    align-self: flex-start;
+}
+
+.event_time {
+    font-size: 0.8rem;
+    align-self: flex-end;
+}

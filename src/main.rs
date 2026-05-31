@@ -26,13 +26,12 @@ fn App() -> Element {
 
     // Initial load from storage
     use_future(move || async move {
-        let matrix = state.matrix.read().clone();
-        let mut manager = matrix.write().await;
+        let manager = state.matrix.cloned();
         if manager.load_from_storage().await.is_some() {
             debug!("Loaded client from storage");
             let _ = manager.start_sync().await;
         }
-        *state.is_loaded.write() = true;
+        state.is_loaded.set(true);
     });
 
     rsx! {

@@ -9,8 +9,7 @@ pub fn Profile() -> Element {
         Button {
             onclick: move |_| {
                 spawn(async move {
-                    let matrix = state.matrix.read().clone();
-                    let mut manager = matrix.write().await;
+                    let manager = state.matrix.cloned();
                     manager.logout().await;
                 });
             },

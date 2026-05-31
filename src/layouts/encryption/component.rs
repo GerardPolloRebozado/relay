@@ -6,6 +6,7 @@ use crate::state::notifications::Notification;
 use dioxus::prelude::*;
 use matrix_sdk::encryption::recovery::RecoveryState;
 use matrix_sdk::stream::StreamExt;
+use log::{debug, error};
 
 #[css_module("/src/layouts/encryption/style.css")]
 struct Styles;
@@ -15,13 +16,12 @@ fn RecoveryModal(on_close: EventHandler<()>) -> Element {
     let mut secret_key = use_signal(String::new);
     let app_state = use_context::<AppState>();
 
-    let matrix = app_state.matrix.read().clone();
+    let matrix = app_state.matrix.cloned();
     
     let client_res = use_resource(move || {
         let matrix = matrix.clone();
         async move {
-            let manager = matrix.read().await;
-            manager.client()
+            matrix.client().await
         }
     });
 
@@ -96,13 +96,10 @@ pub fn Encryption() -> Element {
     let mut show_modal = use_signal(|| false);
 
     use_effect(move || {
-        let matrix = app_state.matrix.read().clone();
+        let matrix = app_state.matrix.cloned();
 
         spawn(async move {
-            let client = {
-                let manager = matrix.read().await;
-                manager.client()
-            };
+            let client = matrix.client().await;
 
             if let Some(client) = client {
                 let initial_state = client.encryption().recovery().state();
