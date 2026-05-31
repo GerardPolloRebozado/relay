@@ -26,7 +26,7 @@ pub fn init_secure_storage() {
 
 #[cfg(target_os = "linux")]
 pub fn init_secure_storage() {
-    use linux_keyutils_keyring_store::Store;
+    use dbus_secret_service_keyring_store::Store;
     let store = Store::new();
 
     if store.is_err() {
