@@ -1,17 +1,21 @@
 use crate::components::button::Button;
 use crate::components::input::Input;
+use crate::components::label::Label;
 use crate::state::app_state::AppState;
 use chrono::{DateTime, Local, TimeZone, Utc};
+use dioxus::html::FileData;
 use dioxus::prelude::*;
+use dioxus_icons::lucide::Plus;
 use dioxus_icons::lucide::Send;
 use futures_util::StreamExt;
-use log::error;
 use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
+use matrix_sdk::ruma::events::AnyMessageLikeEventContent;
 use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId};
 use matrix_sdk_ui::eyeball_im::Vector;
-use matrix_sdk_ui::timeline::{RoomExt, TimelineItem, VirtualTimelineItem};
+use matrix_sdk_ui::timeline::AttachmentSource;
+use matrix_sdk_ui::timeline::{AttachmentConfig, RoomExt, TimelineItem, VirtualTimelineItem};
+use mime_guess;
 use std::sync::Arc;
-use uuid::timestamp;
 
 #[css_module("/src/routes/room/components.css")]
 struct Styles;
@@ -101,7 +105,6 @@ pub fn RoomTimeline(
                         let sender = event.sender().to_string();
                         let content = event.content();
 
-                        //get event hour and minute
                         let timestamp = event.timestamp();
                         let datetime: DateTime<Local> = Local.timestamp_millis_opt(timestamp.0.into()).single().unwrap();
                         let time_of_event = datetime.format("%H:%M").to_string();
@@ -194,52 +197,84 @@ pub fn MessageInput(
 ) -> Element {
     let state = use_context::<AppState>();
 
-    let mut message_text = use_signal(String::new);
+    let mut text_input = use_signal(String::new);
+    let mut file_input_key = use_signal(|| 0);
+    let mut selected_files = use_signal(Vec::<FileData>::new);
 
     rsx! {
         form {
             class: Styles::input_area,
             onsubmit: move |e: FormEvent| {
                 e.prevent_default();
+                let text_to_send = text_input();
+                let files_to_send = selected_files();
 
-                let message = message_text.read().clone();
-
-                if message.trim().is_empty() {
+                if text_to_send.trim().is_empty() && files_to_send.is_empty() {
                     return;
                 }
 
-                message_text.set(String::new());
+                text_input.set(String::new());
+                selected_files.set(Vec::new());
+                file_input_key.with_mut(|k| *k += 1);
 
                 let matrix = state.matrix.cloned();
-                let content = RoomMessageEventContent::text_plain(message);
-                let cloned_id = room_id.clone();
+                let room_id = room_id.clone();
 
                 spawn(async move {
-                    let client = matrix.client().await;
-                    if let Some(client) = client {
-                        if let Some(room) = client.get_room(&cloned_id) {
-                            if let Err(e) = room.send(content).await {
-                                error!("Failed to send message: {:?}", e);
-                            }
-                        } else {
-                             error!("Cannot get room");
+                    let client = matrix.client().await.unwrap();
+                    let room = client.get_room(&room_id).unwrap();
+                    let timeline = room.timeline().await.unwrap();
+                    if !text_to_send.trim().is_empty() {
+                        let _ = timeline.send(AnyMessageLikeEventContent::RoomMessage(RoomMessageEventContent::text_plain(text_to_send)));
+                    }
+
+                    for file in files_to_send {
+                        let file_name = file.name();
+                        if let Ok(bytes) = file.read_bytes().await {
+                             let mime_type = mime_guess::from_path(std::path::Path::new(&file_name)).first_or_octet_stream();
+                             let source = AttachmentSource::Data {
+                                 filename: file_name,
+                                 bytes: bytes.to_vec(),
+                             };
+
+                             let config = AttachmentConfig::default();
+                             let _ = timeline.send_attachment(source, mime_type, config).await;
                         }
-                    } else {
-                        error!("Cannot get client");
                     }
                 });
+            },
+            div {
+                class: Styles::file_input_wrapper,
+                Input {
+                    key: "{file_input_key}",
+                    r#type: "file",
+                    name: "file",
+                    id: "file",
+                    class: Styles::file_input,
+                    onchange: move |e: FormEvent| {
+                        for file in e.files() {
+                            selected_files.write().push(file);
+                        }
+                    }
+                },
+                Label {
+                    html_for: "file",
+                    div {
+                        class: Styles::plus_button,
+                        Plus {}
+                    }
+                }
             },
             Input {
                 r#type: "text",
                 placeholder: "Type a message...",
                 name: "text",
-
-                value: "{message_text}",
-                oninput: move |e: Event<FormData>| message_text.set(e.value())
+                value: "{text_input}",
+                oninput: move |e: Event<FormData>| text_input.set(e.value())
             }
             Button {
                 r#type: "submit",
-                disabled: message_text.len() == 0,
+                disabled: text_input().is_empty() && selected_files().is_empty(),
                 Send {}
             }
         }

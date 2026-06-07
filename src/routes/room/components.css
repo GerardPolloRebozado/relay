@@ -39,3 +39,42 @@
     font-size: 0.8rem;
     align-self: flex-end;
 }
+
+.file_input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.file_input_wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plus_button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-color-2);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.plus_button:hover {
+    background-color: var(--primary-color-3);
+    transform: scale(1.05);
+}
+
+.plus_button svg {
+    width: 20px;
+    height: 20px;
+}

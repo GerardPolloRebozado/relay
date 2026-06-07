@@ -27,6 +27,7 @@ base64 = "0.22.1"
 matrix-sdk-ui = "0.17.0"
 futures-util = "0.3.32"
 chrono = "0.4.44"
+mime_guess = "2.0.5"
 
 
 [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
