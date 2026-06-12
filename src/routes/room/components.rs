@@ -1,6 +1,8 @@
 use crate::components::button::Button;
 use crate::components::input::Input;
 use crate::components::label::Label;
+use crate::routes::room::message_types::image::ImageMessage;
+use crate::routes::room::message_types::image::ImagePayload;
 use crate::state::app_state::AppState;
 use chrono::{DateTime, Local, TimeZone, Utc};
 use dioxus::html::FileData;
@@ -31,7 +33,7 @@ fn ChatBubble(sender: String, is_me: bool, time_of_event: String, children: Elem
     rsx! {
         div { class: alignment_class,
             div { class: Styles::message,
-                strong { class: Styles::sender ,"{sender}"  }
+                strong {"{sender}"  }
                 div {
                 {children}
                 }
@@ -126,9 +128,7 @@ pub fn RoomTimeline(
                                             match msg.msgtype() {
                                                 MessageType::Text(text) => rsx! { span { "{text.body}" } },
                                                 MessageType::Image(img) => rsx! {
-                                                    span {
-                                                        "[Image: {img.body}]"
-                                                    }
+                                                    ImageMessage { payload: ImagePayload(img.clone()) }
                                                 },
                                                 MessageType::Video(video) => rsx! {
                                                     span {

@@ -7,7 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dioxus = { version = "0.7.1", features = ["router"] }
+dioxus = { version = "0.7.9", features = ["router"] }
 dioxus-i18n = "0.5.1"
 matrix-sdk = { version = "0.17.0", features = ["e2e-encryption", "sqlite", "bundled-sqlite"] }
 serde = "1.0.228"
@@ -28,7 +28,6 @@ matrix-sdk-ui = "0.17.0"
 futures-util = "0.3.32"
 chrono = "0.4.44"
 mime_guess = "2.0.5"
-
 
 [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
 apple-native-keyring-store = { version = "1.0", features = ["keychain"] }
