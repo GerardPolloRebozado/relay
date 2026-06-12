@@ -6,6 +6,9 @@ use matrix_sdk::{
     ruma::events::room::message::ImageMessageEventContent,
 };
 
+#[css_module("/src/routes/room/message_types/image.css")]
+struct Styles;
+
 #[derive(Clone)]
 pub struct ImagePayload(pub ImageMessageEventContent);
 
@@ -54,7 +57,7 @@ pub fn ImageMessage(payload: ImagePayload) -> Element {
             img {
                 src: "{base64_src}",
                 alt: "{img.body}",
-                style: "max-width: 100%; border-radius: 8px;"
+                class: Styles::img,
             }
         },
         Some(None) => rsx! {
