@@ -1,13 +1,18 @@
 use crate::components::button::Button;
 use crate::components::input::Input;
 use crate::components::label::Label;
+use crate::routes::room::message_types::image::ImageMessage;
+use crate::routes::room::message_types::image::ImagePayload;
 use crate::state::app_state::AppState;
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use chrono::{DateTime, Local, TimeZone, Utc};
 use dioxus::html::FileData;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::Plus;
 use dioxus_icons::lucide::Send;
 use futures_util::StreamExt;
+use matrix_sdk::media::MediaFormat;
+use matrix_sdk::media::MediaRequestParameters;
 use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
 use matrix_sdk::ruma::events::AnyMessageLikeEventContent;
 use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId};
@@ -125,9 +130,11 @@ pub fn RoomTimeline(
                                         if let Some(msg) = content.as_message() {
                                             match msg.msgtype() {
                                                 MessageType::Text(text) => rsx! { span { "{text.body}" } },
-                                                MessageType::Image(img) => rsx! {
-                                                    span {
-                                                        "[Image: {img.body}]"
+                                                MessageType::Image(img) => {
+                                                    rsx! {
+                                                    ImageMessage {
+                                                            payload: ImagePayload(img.clone())
+                                                        }
                                                     }
                                                 },
                                                 MessageType::Video(video) => rsx! {
