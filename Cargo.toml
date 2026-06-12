@@ -1,6 +1,6 @@
 [package]
 name = "Relay"
-version = "0.1.0"
+version = "0.0.0-git"
 authors = ["gerardPolloRebozado <gerardit4@gmail.com>"]
 edition = "2021"
 
