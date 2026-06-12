@@ -45,8 +45,7 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION#v}
-          echo "Setting version to $VERSION"
-          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          sed "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml > Cargo.toml.tmp && mv Cargo.toml.tmp Cargo.toml
 
       - name: Install Linux Dependencies
         if: matrix.platform == 'linux'
@@ -57,6 +56,9 @@ jobs:
             libwebkit2gtk-4.1-dev \
             libayatana-appindicator3-dev \
             libssl-dev \
+            libxdo-dev \
+            libdbus-1-dev \
+            libsoup-3.0-dev \
             pkg-config \
             clang \
             libclang-dev \
