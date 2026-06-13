@@ -3,7 +3,7 @@ use crate::state::app_state::AppState;
 use dioxus::prelude::*;
 
 #[component]
-pub fn Profile() -> Element {
+pub fn Settings() -> Element {
     let state = use_context::<AppState>();
     rsx! {
         Button {

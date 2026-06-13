@@ -1,6 +1,6 @@
 use crate::routes::router::Route;
 use dioxus::prelude::*;
-use dioxus_icons::lucide::{Bell, House, Settings, User};
+use dioxus_icons::lucide::{House, Settings};
 
 #[css_module("/src/layouts/sidebar/style.css")]
 struct Styles;
@@ -21,27 +21,13 @@ pub fn Sidebar() -> Element {
                         },
                         active: matches!(current_route, Route::Home),
                     }
-                    NavItem {
-                        to: Route::Profile,
-                        icon: rsx! {
-                            Bell { size: 24 }
-                        },
-                        active: matches!(current_route, Route::Profile),
-                    }
                 }
                 div { style: "flex: 1" }
                 div { class: Styles::sidebar_bottom,
                     NavItem {
-                        to: Route::Profile,
+                        to: Route::Settings,
                         icon: rsx! {
                             Settings { size: 24 }
-                        },
-                        active: false,
-                    }
-                    NavItem {
-                        to: Route::Profile,
-                        icon: rsx! {
-                            User { size: 24 }
                         },
                         active: false,
                     }
@@ -61,11 +47,11 @@ pub fn Sidebar() -> Element {
                     active: matches!(current_route, Route::Home),
                 }
                 NavItem {
-                    to: Route::Profile,
+                    to: Route::Settings,
                     icon: rsx! {
-                        Bell { size: 24 }
+                        Settings { size: 24 }
                     },
-                    active: matches!(current_route, Route::Profile),
+                    active: matches!(current_route, Route::Settings),
                 }
             }
         }
