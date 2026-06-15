@@ -4,6 +4,7 @@ pub mod layouts;
 pub mod routes;
 pub mod services;
 pub mod state;
+pub mod utilities;
 
 use crate::routes::router::Route;
 use crate::state::secure_state::init_secure_storage;

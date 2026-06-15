@@ -97,7 +97,7 @@ impl MatrixManager {
         };
 
         if let Some(sync_service) = sync_service {
-            let _ = sync_service.stop();
+            let _ = sync_service.stop().await;
         }
 
         if let Some(client) = client {
@@ -124,7 +124,7 @@ impl MatrixManager {
         println!("DEBUG: Starting SyncService...");
         
         // Ensure event cache is subscribed to
-        let _ = client.event_cache().subscribe().map_err(|e| e.to_string())?;
+        client.event_cache().subscribe().map_err(|e| e.to_string())?;
 
         let sync_service = Arc::new(
             SyncService::builder(client.clone())

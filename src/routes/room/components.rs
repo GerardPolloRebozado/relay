@@ -4,6 +4,7 @@ use crate::components::label::Label;
 use crate::routes::room::message_types::image::ImageMessage;
 use crate::routes::room::message_types::image::ImagePayload;
 use crate::state::app_state::AppState;
+use crate::utilities::media;
 use chrono::{DateTime, Local, TimeZone, Utc};
 use dioxus::html::FileData;
 use dioxus::prelude::*;
@@ -225,7 +226,7 @@ pub fn MessageInput(
                     let room = client.get_room(&room_id).unwrap();
                     let timeline = room.timeline().await.unwrap();
                     if !text_to_send.trim().is_empty() {
-                        let _ = timeline.send(AnyMessageLikeEventContent::RoomMessage(RoomMessageEventContent::text_plain(text_to_send)));
+                        let _ = timeline.send(AnyMessageLikeEventContent::RoomMessage(RoomMessageEventContent::text_plain(text_to_send))).await;
                     }
 
                     for file in files_to_send {

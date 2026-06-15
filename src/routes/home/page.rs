@@ -1,12 +1,12 @@
 use crate::components::scroll_area::ScrollArea;
-use crate::routes::home::components::{DMCard, DMInfo};
+use crate::routes::home::components::{DMCard, DMInfo, NewRoom};
 use crate::routes::home::dm_utilities::{get_last_message_in_room, get_room_avatar};
 use crate::routes::router::Route;
 use crate::state::app_state::AppState;
 use dioxus::prelude::*;
 use futures_util::{pin_mut, StreamExt};
-use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 use matrix_sdk::ruma::events::room::message::MessageType;
+use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 
 #[css_module("/src/routes/home/page.css")]
 struct Styles;
@@ -19,11 +19,8 @@ pub fn Home() -> Element {
     use_future(move || async move {
         println!("DEBUG: Home component use_future started");
         let matrix = state.matrix.cloned();
-        
-        let (client, room_list_service) = (
-            matrix.client().await,
-            matrix.room_list_service().await,
-        );
+
+        let (client, room_list_service) = (matrix.client().await, matrix.room_list_service().await);
 
         let (Some(client), Some(room_list_service)) = (client, room_list_service) else {
             println!("DEBUG: Client or RoomListService missing, redirecting to login");
@@ -43,7 +40,7 @@ pub fn Home() -> Element {
 
         let (room_list_stream, controller) = all_rooms_list.entries_with_dynamic_adapters(100);
         pin_mut!(room_list_stream);
-        
+
         // Active the stream by setting a filter
         controller.set_filter(Box::new(|_| true));
         println!("DEBUG: Home component room list stream activated");
@@ -60,8 +57,13 @@ pub fn Home() -> Element {
             let mut last_message = String::new();
             if let Some(option_last_message) = get_last_message_in_room(&room).await {
                 for timeline_event in option_last_message.chunk {
-                    let Ok(event) = timeline_event.raw().deserialize() else { continue; };
-                    if let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(msg)) = event {
+                    let Ok(event) = timeline_event.raw().deserialize() else {
+                        continue;
+                    };
+                    if let AnySyncTimelineEvent::MessageLike(
+                        AnySyncMessageLikeEvent::RoomMessage(msg),
+                    ) = event
+                    {
                         if let Some(original_msg) = msg.as_original() {
                             if let MessageType::Text(text_msg) = &original_msg.content.msgtype {
                                 last_message = text_msg.body.clone();
@@ -119,8 +121,9 @@ pub fn Home() -> Element {
 
     rsx! {
         div { class: Styles::home_container,
-            header { class: "home-header",
-                h2 { class: Styles::page_title, "Messages" }
+            header { class: Styles::home_header,
+                h2 { "Messages" }
+                NewRoom{}
             }
 
             ScrollArea { class: "room-list-scroll",

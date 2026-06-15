@@ -1,13 +1,13 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use log::{debug, error};
+use matrix_sdk::room::{Messages, MessagesOptions};
+use matrix_sdk::ruma::api::Direction::Backward;
 use matrix_sdk::ruma::media::Method;
+use matrix_sdk::ruma::UInt;
 use matrix_sdk::{
     media::{MediaFormat, MediaThumbnailSettings},
     Client, Room, RoomMemberships,
 };
-use matrix_sdk::room::{Messages, MessagesOptions};
-use matrix_sdk::ruma::api::Direction::Backward;
-use matrix_sdk::ruma::UInt;
 
 pub async fn get_room_avatar(client: &Client, room: &Room) -> Option<String> {
     let format = MediaFormat::Thumbnail(MediaThumbnailSettings {
@@ -51,7 +51,6 @@ fn encode_to_data_uri(bytes: Vec<u8>) -> Option<String> {
     let b64_string = STANDARD.encode(&bytes);
     Some(format!("data:image/png;base64,{}", b64_string))
 }
-
 
 pub async fn get_last_message_in_room(room: &Room) -> Option<Messages> {
     let mut last_msg_options = MessagesOptions::new(Backward);

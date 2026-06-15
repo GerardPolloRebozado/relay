@@ -4,13 +4,6 @@
     margin: 0 auto;
 }
 
-.page_title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin: 0 0 2.5rem 0;
-    color: var(--secondary-color-4);
-}
-
 .room_list {
     display: flex;
     flex-direction: column;
@@ -21,4 +14,15 @@
     text-align: center;
     padding: 4rem 2rem;
     color: var(--secondary-color-5);
+}
+
+.home_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 2.5rem 0;
+    color: var(--secondary-color-4);
 }

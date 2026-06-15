@@ -28,3 +28,17 @@
     align-items: center;
     gap: 1rem;
 }
+
+.search_results_card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0rem 1rem;
+    font-size: 1rem;
+}
+
+.search_results_list {
+    max-height: 50dvw;
+    overflow-y: scroll;
+    gap: 1rem;
+}
