@@ -1,10 +1,12 @@
 use crate::{
     components::{
         avatar::{AvatarImageSize, ImageAvatar},
+        badge::{Badge, BadgeVariant},
         card::{Card, CardContent, CardDescription, CardHeader, CardTitle},
-        dialog::{Dialog, DialogDescription, DialogTitle},
+        dialog::{Dialog, DialogTitle},
         dropdown_menu::{DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger},
         input::Input,
+        item::{Item, ItemVariant},
     },
     routes::router::Route,
     state::app_state::AppState,
@@ -13,11 +15,7 @@ use crate::{
 use dioxus::prelude::*;
 use dioxus_icons::lucide::Plus;
 use dioxus_router::components::Link;
-use matrix_sdk::ruma::media::Method;
-use matrix_sdk::{
-    media::{MediaFormat, MediaThumbnailSettings},
-    ruma::OwnedRoomId,
-};
+use matrix_sdk::ruma::OwnedRoomId;
 
 #[derive(Clone, PartialEq)]
 pub struct DMInfo {
@@ -56,16 +54,18 @@ pub fn DMCard(dm: DMInfo) -> Element {
     }
 }
 
+#[derive(Clone)]
+pub struct UserSearchResult {
+    user_id: String,
+    avatar_url: Option<String>,
+}
+
 #[component]
 pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
     let mut search_term = use_signal(|| "".to_string());
     let mut search_results = use_signal(|| Vec::new());
+    let mut selected_users = use_signal(|| Vec::<UserSearchResult>::new());
     let app_state = use_context::<AppState>();
-
-    struct UserSearchResult {
-        user_id: String,
-        avatar_url: Option<String>,
-    }
 
     use_effect(move || {
         let value = search_term.cloned();
@@ -101,10 +101,43 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
 
     rsx! {
         Dialog {
+            class: Styles::new_dm_dialog,
             open: open(),
             on_open_change: move |v| open.set(v),
             DialogTitle { "Create Direct Message" }
-            DialogDescription { "Select a user to start a conversation." }
+            {
+                if selected_users.len() > 0 {
+                    rsx! {
+                        div {
+                            p{
+                                {"Selected users: ".to_string()},
+                            }
+                            div {
+                            class: Styles::selected_users_list,
+                            for (i, user) in selected_users.iter().enumerate() {
+                                    Item {
+                                        class: Styles::selected_user,
+                                        onclick: move |_| {
+                                            selected_users.write().remove(i);
+                                        },
+                                        variant: ItemVariant::Outline,
+                                    if let Some(avatar_url) = user.avatar_url.clone() {
+                                        ImageAvatar {
+                                            src: "{avatar_url}",
+                                            alt: "User profile picture",
+                                            size: AvatarImageSize::Medium,
+                                        }
+                                    }
+                                            {user.user_id.as_str()}
+                                    }
+                            }
+                            }
+                        }
+                    }
+                } else {
+                    rsx!{}
+                }
+            }
             Input {
                 onchange: move |e: FormEvent| search_term.set(e.value()),
                 value: search_term,
@@ -113,18 +146,23 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
             div {
                 class: Styles::search_results_list,
                 for user in search_results.read().iter() {
-                    Card {
-                        CardDescription {
-                            class: Styles::search_results_card,
+                    {
+                    let user_clone = user.clone();
+                        rsx! {
+                            Item {
+                                class: Styles::search_results_card,
+                                onclick: move | _ | selected_users.write().push(user_clone.clone()),
+                                variant: ItemVariant::Outline,
                             if let Some(avatar_url) = user.avatar_url.clone() {
-                            ImageAvatar {
-                                src: "{avatar_url}",
-                                alt: "User profile picture",
-                                size: AvatarImageSize::Medium,
+                                ImageAvatar {
+                                    src: "{avatar_url}",
+                                    alt: "User profile picture",
+                                    size: AvatarImageSize::Medium,
+                                }
                             }
-                            }
-                            p {
-                            {user.user_id.as_str()}
+                                p {
+                                    {user.user_id.as_str()}
+                                }
                             }
                         }
                     }
