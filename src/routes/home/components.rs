@@ -2,6 +2,7 @@ use crate::{
     components::{
         avatar::{AvatarImageSize, ImageAvatar},
         badge::{Badge, BadgeVariant},
+        button::Button,
         card::{Card, CardContent, CardDescription, CardHeader, CardTitle},
         dialog::{Dialog, DialogTitle},
         dropdown_menu::{DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger},
@@ -14,8 +15,11 @@ use crate::{
 };
 use dioxus::prelude::*;
 use dioxus_icons::lucide::Plus;
+use dioxus_icons::lucide::User;
 use dioxus_router::components::Link;
-use matrix_sdk::ruma::OwnedRoomId;
+use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId, UserId};
+use matrix_sdk::{ruma::api::client::room::create_room::v3::Request as CreateRoomRequest, Client};
+use std::collections::HashMap;
 
 #[derive(Clone, PartialEq)]
 pub struct DMInfo {
@@ -63,7 +67,7 @@ pub struct UserSearchResult {
 #[component]
 pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
     let mut search_term = use_signal(|| "".to_string());
-    let mut search_results = use_signal(|| Vec::new());
+    let mut search_results = use_signal(|| Vec::<UserSearchResult>::new());
     let mut selected_users = use_signal(|| Vec::<UserSearchResult>::new());
     let app_state = use_context::<AppState>();
 
@@ -82,20 +86,20 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                 return;
             }
             let response = response.unwrap();
-            search_results.write().clear();
+            let mut new_results = Vec::new();
             for user in response.results {
-                if let Some(avatar_url) = user.avatar_url.clone() {
-                    search_results.write().push(UserSearchResult {
-                        user_id: user.user_id.clone().to_string(),
-                        avatar_url: get_img(avatar_url).await,
-                    });
+                let user_id = user.user_id.to_string();
+                let avatar_url = if let Some(url) = user.avatar_url {
+                    get_img(url).await
                 } else {
-                    search_results.write().push(UserSearchResult {
-                        user_id: user.user_id.clone().to_string(),
-                        avatar_url: None,
-                    });
-                }
+                    None
+                };
+                new_results.push(UserSearchResult {
+                    user_id,
+                    avatar_url,
+                });
             }
+            search_results.set(new_results);
         });
     });
 
@@ -121,13 +125,18 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                                             selected_users.write().remove(i);
                                         },
                                         variant: ItemVariant::Outline,
-                                    if let Some(avatar_url) = user.avatar_url.clone() {
-                                        ImageAvatar {
-                                            src: "{avatar_url}",
-                                            alt: "User profile picture",
-                                            size: AvatarImageSize::Medium,
+
+                                        {
+                                            let avatar_url = user.avatar_url.clone().unwrap_or_default();
+                                            rsx! {
+                                                ImageAvatar {
+                                                    src: "{avatar_url}",
+                                                    alt: "User profile picture",
+                                                    size: AvatarImageSize::Medium,
+                                                    User {}
+                                                }
+                                            }
                                         }
-                                    }
                                             {user.user_id.as_str()}
                                     }
                             }
@@ -148,18 +157,25 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                 for user in search_results.read().iter() {
                     {
                     let user_clone = user.clone();
+                    let avatar_url = user.avatar_url.clone().unwrap_or_default();
                         rsx! {
                             Item {
                                 class: Styles::search_results_card,
-                                onclick: move | _ | selected_users.write().push(user_clone.clone()),
+                                onclick: move | _ | {
+                                    let mut selected = selected_users.write();
+                                    if let Some(index) = selected.iter().position(|u| u.user_id == user_clone.user_id) {
+                                        selected.remove(index);
+                                    } else {
+                                        selected.push(user_clone.clone());
+                                    }
+                                },
                                 variant: ItemVariant::Outline,
-                            if let Some(avatar_url) = user.avatar_url.clone() {
                                 ImageAvatar {
                                     src: "{avatar_url}",
                                     alt: "User profile picture",
                                     size: AvatarImageSize::Medium,
+                                    User {}
                                 }
-                            }
                                 p {
                                     {user.user_id.as_str()}
                                 }
@@ -167,6 +183,26 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                         }
                     }
                 }
+            }
+            Button {
+                onclick: move | _ | {
+                    spawn(async move {
+                    let client = app_state.matrix.cloned().client().await.unwrap();
+                    let mut request = CreateRoomRequest::new();
+                    for user in selected_users.read().iter() {
+                        let user_id = UserId::parse(user.user_id.clone()).unwrap();
+                        request.invite.push(user_id);
+                    }
+                    let result = client.create_room(request).await;
+                    if result.is_err() {
+                        todo!("Proper error handling");
+                        return;
+                    }
+                    let result = result.unwrap();
+                      navigator().push(Route::Room { id: result.room_id().to_owned() });
+                    });
+                },
+                {"Create chat".to_string()}
             }
         }
     }
