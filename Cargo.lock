@@ -18,6 +18,7 @@ dependencies = [
  "env_logger",
  "futures-util",
  "hex",
+ "infer",
  "keyring-core",
  "log",
  "matrix-sdk",

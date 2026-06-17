@@ -1,62 +1,69 @@
 :root {
+    /* Theme Toggles (Used by components for swapping) */
+    --light: initial;
+    --dark: ;
+
     /* Global Page Styles */
-    --background: #f1f5f9; /* Slightly darker than #f8fafc for better contrast with white cards */
-    --foreground: #0f172a;
-    --border: #cbd5e1; /* Darker border for light mode */
+    --background: #f8fafc; /* Slate 50 */
+    --foreground: #0f172a; /* Slate 900 */
+    --border: #e2e8f0; /* Slate 200 */
     --radius: 0.75rem;
 
-    /* DX Component Tokens (Light Mode) */
+    /* DX Component Tokens (Light Mode Defaults) */
     --primary-color: #ffffff;
     --primary-color-1: #f8fafc;
-    --primary-color-2: #ffffff;
+    --primary-color-2: #ffffff; /* CARD BACKGROUND (Light) */
     --primary-color-3: #f1f5f9;
     --primary-color-4: #e2e8f0;
     --primary-color-5: #cbd5e1;
-    --primary-color-6: #94a3b8; /* Border color - much more visible */
-    --primary-color-7: #64748b;
+    --primary-color-6: #cbd5e1; /* CARD BORDER (Light) */
+    --primary-color-7: #94a3b8;
 
     --secondary-color: #0f172a;
     --secondary-color-1: #1e293b;
-    --secondary-color-2: #2563eb; /* Blue primary */
-    --secondary-color-3: #334155;
-    --secondary-color-4: #020617; /* Darker text for better contrast */
-    --secondary-color-5: #475569; /* Muted text - more visible */
-    --secondary-color-6: #64748b;
+    --secondary-color-2: #3b82f6; /* Modern Vibrant Blue */
+    --secondary-color-3: #2563eb;
+    --secondary-color-4: #020617;
+    --secondary-color-5: #475569;
+    --secondary-color-6: #94a3b8;
 
     --focused-border-color: #3b82f6;
-    --primary-error-color: #dc2626;
-    --secondary-error-color: #ef4444;
+    --primary-error-color: #ef4444;
+    --secondary-error-color: #dc2626;
+    --contrast-error-color: #ffffff;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md:
-        0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg:
-        0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 }
 
 .dark {
-    --background: #020617;
+    /* Theme Toggles (Active for .dark) */
+    --light: /**/;
+    --dark: initial;
+
+    --background: #020617; /* Deep Slate 950 */
     --foreground: #f8fafc;
     --border: #1e293b;
 
     /* DX Component Tokens (Dark Mode) */
     --primary-color: #0f172a;
     --primary-color-1: #020617;
-    --primary-color-2: #1e293b;
-    --primary-color-3: #0f172a;
-    --primary-color-4: #1e293b;
-    --primary-color-5: #1e293b;
-    --primary-color-6: #334155;
-    --primary-color-7: #475569;
+    --primary-color-2: #0f172a; 
+    --primary-color-3: #1e293b; /* CARD BACKGROUND (Dark) - Slate 800 */
+    --primary-color-4: #1e293b; 
+    --primary-color-5: #334155; /* CARD BORDER (Dark) - Slate 700 */
+    --primary-color-6: #475569;
+    --primary-color-7: #94a3b8;
 
     --secondary-color: #f8fafc;
     --secondary-color-1: #f1f5f9;
-    --secondary-color-2: #3b82f6; /* Blue primary */
-    --secondary-color-3: #cbd5e1;
-    --secondary-color-4: #ffffff; /* Bright white for text */
-    --secondary-color-5: #94a3b8; /* Muted text */
-    --secondary-color-6: #475569;
+    --secondary-color-2: #3b82f6;
+    --secondary-color-3: #60a5fa;
+    --secondary-color-4: #ffffff;
+    --secondary-color-5: #94a3b8;
+    --secondary-color-6: #64748b;
 
     --focused-border-color: #60a5fa;
 }

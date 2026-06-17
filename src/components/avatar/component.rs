@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
-use dioxus_primitives::avatar::{self, AvatarState};
 use dioxus_primitives::dioxus_attributes::attributes;
+use dioxus_primitives::avatar::{self, AvatarState};
 use dioxus_primitives::merge_attributes;
 
 #[css_module("/src/components/avatar/style.css")]
@@ -77,7 +77,9 @@ pub fn Avatar(props: AvatarProps) -> Element {
         props.size.to_class(),
         props.shape.to_class()
     );
-    let base = attributes!(span { class });
+    let base = attributes!(span {
+        class
+    });
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
@@ -139,7 +141,10 @@ pub fn AvatarFallback(props: AvatarFallbackProps) -> Element {
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        avatar::AvatarFallback { attributes: merged, {props.children} }
+        avatar::AvatarFallback {
+            attributes: merged,
+            {props.children}
+        }
     }
 }
 
@@ -189,8 +194,13 @@ pub fn ImageAvatar(props: ImageAvatarProps) -> Element {
             size: props.size,
             shape: props.shape,
             attributes: props.attributes,
-            AvatarImage { src: props.src, alt: props.alt }
-            AvatarFallback { {props.children} }
+            AvatarImage {
+                src: props.src,
+                alt: props.alt,
+            }
+            AvatarFallback {
+                {props.children}
+            }
         }
     }
 }

@@ -33,7 +33,12 @@ pub fn TooltipTrigger(props: TooltipTriggerProps) -> Element {
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        tooltip::TooltipTrigger { id: props.id, r#as: props.r#as, attributes: merged, {props.children} }
+        tooltip::TooltipTrigger {
+            id: props.id,
+            as: props.r#as,
+            attributes: merged,
+            {props.children}
+        }
     }
 }
 
