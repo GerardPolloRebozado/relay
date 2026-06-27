@@ -1,22 +1,22 @@
 use crate::components::button::Button;
 use crate::components::input::Input;
 use crate::components::label::Label;
-use crate::routes::room::message_types::image::ImageMessage;
-use crate::routes::room::message_types::image::ImagePayload;
 use crate::state::app_state::AppState;
-use crate::utilities::media;
 use chrono::{DateTime, Local, TimeZone, Utc};
 use dioxus::html::FileData;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::Plus;
 use dioxus_icons::lucide::Send;
 use futures_util::StreamExt;
-use matrix_sdk::ruma::events::room::message::{MessageType, RoomMessageEventContent};
+use matrix_sdk::ruma::events::room::message::RoomMessageEventContent;
 use matrix_sdk::ruma::events::AnyMessageLikeEventContent;
 use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId};
 use matrix_sdk_ui::eyeball_im::Vector;
 use matrix_sdk_ui::timeline::AttachmentSource;
-use matrix_sdk_ui::timeline::{AttachmentConfig, RoomExt, TimelineItem, VirtualTimelineItem};
+use matrix_sdk_ui::timeline::{
+    AttachmentConfig, RoomExt, TimelineItem, VirtualTimelineItem,
+};
+use crate::routes::room::timeline_utilities::render_timeline_event;
 use mime_guess;
 use std::sync::Arc;
 
@@ -24,7 +24,7 @@ use std::sync::Arc;
 struct Styles;
 
 #[component]
-fn ChatBubble(sender: String, is_me: bool, time_of_event: String, children: Element) -> Element {
+pub fn ChatBubble(sender: String, is_me: bool, time_of_event: String, children: Element) -> Element {
     let alignment_class = if is_me {
         Styles::my_message
     } else {
@@ -118,50 +118,7 @@ pub fn RoomTimeline(
                             .map(|id| id.as_str() == sender)
                             .unwrap_or(false);
 
-                        if content.as_message().is_some()
-                            || content.is_unable_to_decrypt()
-                            || content.as_sticker().is_some()
-                        {
-                            rsx! {
-                                ChatBubble { sender, is_me, time_of_event,
-                                    {
-                                        if let Some(msg) = content.as_message() {
-                                            match msg.msgtype() {
-                                                MessageType::Text(text) => rsx! { span { "{text.body}" } },
-                                                MessageType::Image(img) => rsx! {
-                                                    ImageMessage { payload: ImagePayload(img.clone()) }
-                                                },
-                                                MessageType::Video(video) => rsx! {
-                                                    span {
-                                                        "[Video: {video.body}]"
-                                                    }
-                                                },
-                                                _ => rsx! {
-                                                    span {
-                                                        "[Unsupported File]"
-                                                    }
-                                                },
-                                            }
-                                        } else if content.is_unable_to_decrypt() {
-                                            rsx! { span { "Unable to decrypt" } }
-                                        } else if let Some(_sticker) = content.as_sticker() {
-                                            rsx! {
-                                                span {
-                                                    style: "font-style: italic; color: gray;",
-                                                    "[Sticker]"
-                                                }
-                                            }
-                                        } else {
-                                            rsx! { "" }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            rsx! {
-                                div { style: "color: lightgray; font-size: 0.875rem;", "System event" }
-                            }
-                        }
+                        render_timeline_event(content, &sender, is_me, &time_of_event)
                     } else if item.is_date_divider() {
                         let date_text = if let Some(VirtualTimelineItem::DateDivider(ts)) = item.as_virtual() {
                             Utc.timestamp_millis_opt(ts.0.into())
