@@ -1,9 +1,9 @@
+use crate::routes::home::dm_utilities::DMInfo;
 use crate::{
     components::{
         avatar::{AvatarImageSize, ImageAvatar},
         badge::{Badge, BadgeVariant},
         button::Button,
-        card::{Card, CardContent, CardDescription, CardHeader, CardTitle},
         dialog::{Dialog, DialogTitle},
         dropdown_menu::{DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger},
         input::Input,
@@ -17,42 +17,52 @@ use dioxus::prelude::*;
 use dioxus_icons::lucide::Plus;
 use dioxus_icons::lucide::User;
 use dioxus_router::components::Link;
-use matrix_sdk::ruma::{OwnedRoomId, OwnedUserId, UserId};
-use matrix_sdk::{ruma::api::client::room::create_room::v3::Request as CreateRoomRequest, Client};
-use std::collections::HashMap;
-
-#[derive(Clone, PartialEq)]
-pub struct DMInfo {
-    pub room_id: OwnedRoomId,
-    pub name: String,
-    pub avatar_url: String,
-    pub last_message: String,
-}
+use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoomRequest;
+use matrix_sdk::ruma::UserId;
 
 #[css_module("/src/routes/home/components.css")]
 struct Styles;
 
 #[component]
 pub fn DMCard(dm: DMInfo) -> Element {
+    let unread_counts = dm.room.unread_notification_counts();
+    let notification_count = unread_counts.notification_count;
+    let highlight_count = unread_counts.highlight_count;
+
+    let show_badge = notification_count > 0 || highlight_count > 0;
+    let badge_variant = if highlight_count > 0 {
+        BadgeVariant::Destructive
+    } else {
+        BadgeVariant::Primary
+    };
+    let badge_text = if highlight_count > 0 {
+        highlight_count.to_string()
+    } else {
+        notification_count.to_string()
+    };
+
     rsx! {
         Link {
-            to: Route::Room {
-                id: dm.room_id.clone(),
+            to: Route::RoomPage {
+                id: dm.room.room_id().to_owned(),
             },
-            class: "no-link-highlight",
-            Card { key: "{dm.room_id}",
-                CardHeader { class: Styles::card_header,
-                    ImageAvatar {
-                        src: "{dm.avatar_url}",
-                        alt: "{dm.name}",
-                        size: AvatarImageSize::Medium,
-                        "{dm.name.chars().next().unwrap_or('?')}"
+            class: "{Styles::room_card}",
+            ImageAvatar {
+                src: "{dm.avatar_url}",
+                alt: "{dm.name}",
+                size: AvatarImageSize::Medium,
+                "{dm.name.chars().next().unwrap_or('?')}"
+            }
+            div { class: Styles::room_details,
+                div { class: Styles::room_header,
+                    h3 { class: Styles::room_title, "{dm.name}" }
+                    div { class: Styles::room_meta,
+                        if show_badge {
+                            Badge { variant: badge_variant, "{badge_text}" }
+                        }
                     }
-                    CardTitle { "{dm.name}" }
                 }
-                CardContent {
-                    CardDescription { "{dm.last_message}" }
-                }
+                p { class: Styles::room_last_message, "{dm.last_message}" }
             }
         }
     }
@@ -199,7 +209,7 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                         return;
                     }
                     let result = result.unwrap();
-                      navigator().push(Route::Room { id: result.room_id().to_owned() });
+                      navigator().push(Route::RoomPage { id: result.room_id().to_owned() });
                     });
                 },
                 {"Create chat".to_string()}

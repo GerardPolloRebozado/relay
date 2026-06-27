@@ -61,3 +61,59 @@ pub async fn get_last_message_in_room(room: &Room) -> Option<Messages> {
     }
     Some(last_msg.unwrap())
 }
+
+#[derive(Clone)]
+pub struct DMInfo {
+    pub room: Room,
+    pub name: String,
+    pub avatar_url: String,
+    pub last_message: String,
+}
+
+impl PartialEq for DMInfo {
+    fn eq(&self, other: &Self) -> bool {
+        self.room.room_id() == other.room.room_id()
+            && self.name == other.name
+            && self.avatar_url == other.avatar_url
+            && self.last_message == other.last_message
+    }
+}
+
+pub async fn fetch_room_info(room: Room, client: Client) -> DMInfo {
+    use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
+    use matrix_sdk::ruma::events::room::message::MessageType;
+
+    let display_name = room.display_name().await;
+    let name = match display_name {
+        Ok(dn) => dn.to_string(),
+        Err(_) => "Unknown Room".to_string(),
+    };
+    let avatar_url = get_room_avatar(&client, &room)
+        .await
+        .unwrap_or_else(String::new);
+    let mut last_message = String::new();
+    if let Some(option_last_message) = get_last_message_in_room(&room).await {
+        for timeline_event in option_last_message.chunk {
+            let Ok(event) = timeline_event.raw().deserialize() else {
+                continue;
+            };
+            if let AnySyncTimelineEvent::MessageLike(
+                AnySyncMessageLikeEvent::RoomMessage(msg),
+            ) = event
+            {
+                if let Some(original_msg) = msg.as_original() {
+                    if let MessageType::Text(text_msg) = &original_msg.content.msgtype {
+                        last_message = text_msg.body.clone();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    DMInfo {
+        room,
+        name,
+        avatar_url,
+        last_message,
+    }
+}

@@ -24,3 +24,9 @@
     gap: 1rem;
     padding: 1rem 0;
 }
+
+.invitation_buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4;
+}

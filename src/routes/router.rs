@@ -2,7 +2,7 @@ use crate::layouts::encryption::Encryption;
 use crate::layouts::sidebar::Sidebar;
 use crate::routes::home::Home;
 use crate::routes::login::Login;
-use crate::routes::room::Room;
+use crate::routes::room::RoomPage;
 use crate::routes::settings::page::Settings;
 use dioxus::prelude::*;
 use matrix_sdk::ruma::OwnedRoomId;
@@ -21,7 +21,7 @@ pub enum Route {
     Settings,
 
     #[route("/room/:id")]
-    Room { id: OwnedRoomId },
+    RoomPage { id: OwnedRoomId },
 }
 
 #[component]
