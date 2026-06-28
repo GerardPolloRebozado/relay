@@ -7,8 +7,8 @@ use crate::{
     state::app_state::AppState,
 };
 use dioxus::prelude::*;
-use matrix_sdk::ruma::OwnedRoomId;
 use matrix_sdk::{room::Room, RoomState};
+use matrix_sdk::ruma::OwnedRoomId;
 
 #[css_module("/src/routes/room/page.css")]
 struct Styles;
@@ -34,8 +34,9 @@ pub fn RoomPage(id: OwnedRoomId) -> Element {
     if room.read().is_none() {
         return rsx! {"Loading..."};
     }
-
-    let mut unwrapped_room = room.read().clone().unwrap();
+    let room_for_reject = room.read().clone().unwrap();
+    let room_for_accept = room.read().clone().unwrap();
+    let room_id = id.clone();
 
     rsx! {
         div {
@@ -43,16 +44,31 @@ pub fn RoomPage(id: OwnedRoomId) -> Element {
             h2 { "Room" }
             div { class: Styles::chat_container,
                 RoomTimeline { class: Styles::message_list, room_id: id.clone() }
-                if unwrapped_room.state() == RoomState::Joined {
+                if room_for_reject.state() == RoomState::Joined {
                     MessageInput {room_id: id }
                 } else {
                     div {
                         class: Styles::invitation_buttons,
                         Button {
                             variant: ButtonVariant::Destructive,
+                            onclick: move |_evt: MouseEvent| {
+                                let room_clone = room_for_reject.clone();
+                                async move {
+                                    let _ = room_clone.leave().await;
+                                    navigator().push(Route::Home);
+                                }
+                            },
                             "Reject"
                         }
                         Button {
+                            onclick: move |_evt: MouseEvent| {
+                                let room_clone = room_for_accept.clone();
+                                let room_id_clone = room_id.clone();
+                                async move {
+                                    let _ = room_clone.join().await;
+                                    navigator().push(Route::RoomPage { id: room_id_clone });
+                                }
+                            },
                             "Accept"
                         }
                     }

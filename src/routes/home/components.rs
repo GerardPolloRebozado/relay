@@ -77,8 +77,8 @@ pub struct UserSearchResult {
 #[component]
 pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
     let mut search_term = use_signal(|| "".to_string());
-    let mut search_results = use_signal(|| Vec::<UserSearchResult>::new());
-    let mut selected_users = use_signal(|| Vec::<UserSearchResult>::new());
+    let mut search_results = use_signal(Vec::<UserSearchResult>::new);
+    let mut selected_users = use_signal(Vec::<UserSearchResult>::new);
     let app_state = use_context::<AppState>();
 
     use_effect(move || {
@@ -205,7 +205,8 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                     }
                     let result = client.create_room(request).await;
                     if result.is_err() {
-                        todo!("Proper error handling");
+                        // TODO: proper error handling
+                        error!("Error creating a new room");
                         return;
                     }
                     let result = result.unwrap();
