@@ -1,10 +1,7 @@
 use crate::{
     components::button::{Button, ButtonVariant},
     routes::{
-        room::{
-            components::{MessageInput, RoomTimeline},
-            settings::RoomSettingsPage,
-        },
+        room::components::{MessageInput, RoomHeader, RoomTimeline},
         router::Route,
     },
     state::app_state::AppState,
@@ -20,7 +17,6 @@ struct Styles;
 pub fn RoomPage(id: OwnedRoomId) -> Element {
     let cloned_id = id.clone();
     let mut room = use_signal(|| None::<Room>);
-    let mut room_name = use_signal(|| "Room".to_string());
 
     use_future(move || {
         let value = cloned_id.clone();
@@ -33,9 +29,6 @@ pub fn RoomPage(id: OwnedRoomId) -> Element {
                 navigator().push(Route::Login);
                 return;
             }
-            if let Ok(display_name) = _room.clone().unwrap().display_name().await {
-                *room_name.write() = display_name.to_string();
-            }
             room.set(_room);
         }
     });
@@ -46,19 +39,11 @@ pub fn RoomPage(id: OwnedRoomId) -> Element {
     let room_for_reject = room.read().clone().unwrap();
     let room_for_accept = room.read().clone().unwrap();
     let room_id = id.clone();
-    let room_id_for_settings_page = id.clone();
 
     rsx! {
         div {
             class: Styles::container,
-            div {
-                onclick: move | _evt: MouseEvent| {
-                    navigator().push(Route::RoomSettingsPage{id: room_id_for_settings_page.clone()});
-                },
-            h2 {
-                "{room_name}"
-            }
-            }
+            RoomHeader{room_id : id.clone()},
             div { class: Styles::chat_container,
                 RoomTimeline { class: Styles::message_list, room_id: id.clone() }
                 if room_for_reject.state() == RoomState::Joined {
