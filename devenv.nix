@@ -25,6 +25,8 @@
     pkgs.libsoup_3
     pkgs.webkitgtk_4_1
     pkgs.xdotool
+    pkgs.tailwindcss-language-server
+    pkgs.vscode-css-languageserver
   ];
 
   # https://devenv.sh/languages/

@@ -9,24 +9,29 @@ edition = "2021"
 [dependencies]
 dioxus = { version = "0.7.9", features = ["router"] }
 dioxus-i18n = "0.5.1"
-matrix-sdk = { version = "0.17.0", features = ["e2e-encryption", "sqlite", "bundled-sqlite"] }
+matrix-sdk = { version = "0.18.0", features = [
+    "e2e-encryption",
+    "sqlite",
+    "bundled-sqlite",
+] }
 serde = "1.0.228"
-serde_json = "1.0.138"
+serde_json = "1.0.150"
 tokio = { version = "1.52.3", features = ["full"] }
 sysdirs = "0.9.4"
-matrix-sdk-sqlite = { version = "0.17.0", features = ["bundled"] }
-env_logger = "0.11.6"
-log = "0.4.29"
+matrix-sdk-sqlite = { version = "0.18.0", features = ["bundled"] }
+env_logger = "0.11.11"
+log = "0.4.33"
 rand = "0.9.4"
 hex = "0.4.3"
 keyring-core = "1.0"
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1", default-features = false }
-uuid = { version = "1.23.1", features = ["v4"] }
+uuid = { version = "1.23.4", features = ["v4"] }
 dioxus-icons = { version = "0.1.0", default-features = false }
 base64 = "0.22.1"
-matrix-sdk-ui = "0.17.0"
+matrix-sdk-ui = "0.18.0"
 futures-util = "0.3.32"
-chrono = "0.4.44"
+regex = { version = "1.12.3", features = ["unicode-perl"] }
+chrono = "0.4.45"
 mime_guess = "2.0.5"
 infer = "0.19.0"
 
@@ -37,7 +42,9 @@ apple-native-keyring-store = { version = "1.0", features = ["keychain"] }
 windows-native-keyring-store = "1.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-dbus-secret-service-keyring-store = { version = "1.0.0", features = ["crypto-rust"] }
+dbus-secret-service-keyring-store = { version = "1.0.0", features = [
+    "crypto-rust",
+] }
 
 [target.'cfg(target_os = "android")'.dependencies]
 android-native-keyring-store = "1.0"
