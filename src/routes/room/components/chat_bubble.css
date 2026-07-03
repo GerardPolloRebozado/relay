@@ -1,0 +1,28 @@
+
+.my_message {
+    display: flex;
+    align-self: flex-end;
+}
+
+.others_message {
+    display: flex;
+    align-self: flex-start;
+}
+
+.additional_info {
+    justify-self: end;
+}
+
+.event_time {
+    font-size: 0.8rem;
+    align-self: flex-end;
+}
+
+.message {
+    border-radius: 2rem;
+    background-color: var(--primary-color-2);
+    padding: 0.5rem 1rem;
+    display: grid;
+    justify-content: space-between;
+    gap: 1rem;
+}

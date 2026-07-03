@@ -128,16 +128,8 @@ pub fn render_timeline_event(
                 AnyOtherStateEventContentChange::RoomAvatar(_) => {
                     format!("{} changed the room avatar", sender)
                 }
-                AnyOtherStateEventContentChange::RoomCreate(create_change) => {
-                    if let StateEventContentChange::Original { content, .. } = create_change {
-                        if let Some(creator) = &content.creator {
-                            format!("Room created by {}", creator)
-                        } else {
-                            format!("Room created by {}", sender)
-                        }
-                    } else {
-                        "Room created".to_string()
-                    }
+                AnyOtherStateEventContentChange::RoomCreate(_) => {
+                    format!("Room created by {}", sender)
                 }
                 AnyOtherStateEventContentChange::RoomEncryption(_) => {
                     "Encryption enabled".to_string()
