@@ -1,11 +1,9 @@
+use crate::routes::room::components::ChatBubble;
+use crate::routes::room::message_types::image::{ImageMessage, ImagePayload};
 use dioxus::prelude::*;
 use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk::ruma::events::StateEventContentChange;
-use matrix_sdk_ui::timeline::{
-    AnyOtherStateEventContentChange, MsgLikeKind, TimelineItemContent,
-};
-use crate::routes::room::components::ChatBubble;
-use crate::routes::room::message_types::image::{ImageMessage, ImagePayload};
+use matrix_sdk_ui::timeline::{AnyOtherStateEventContentChange, MsgLikeKind, TimelineItemContent};
 
 pub fn render_timeline_event(
     content: &TimelineItemContent,
@@ -14,85 +12,87 @@ pub fn render_timeline_event(
     time_of_event: &str,
 ) -> Element {
     match content {
-        TimelineItemContent::MsgLike(msg_like) => {
-            match &msg_like.kind {
-                MsgLikeKind::Message(msg) => {
-                    let bubble_content = match msg.msgtype() {
-                        MessageType::Text(text) => rsx! { span { "{text.body}" } },
-                        MessageType::Image(img) => rsx! {
-                            ImageMessage { payload: ImagePayload(img.clone()) }
-                        },
-                        MessageType::Video(video) => rsx! {
-                            span { "[Video: {video.body}]" }
-                        },
-                        _ => rsx! { span { "[Unsupported File]" } },
-                    };
-                    rsx! {
-                        ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(), {bubble_content} }
-                    }
+        TimelineItemContent::MsgLike(msg_like) => match &msg_like.kind {
+            MsgLikeKind::Message(msg) => {
+                let bubble_content = match msg.msgtype() {
+                    MessageType::Text(text) => rsx! { span { "{text.body}" } },
+                    MessageType::Image(img) => rsx! {
+                        ImageMessage { payload: ImagePayload(img.clone()) }
+                    },
+                    MessageType::Video(video) => rsx! {
+                        span { "[Video: {video.body}]" }
+                    },
+                    _ => rsx! { span { "[Unsupported File]" } },
+                };
+                rsx! {
+                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(), {bubble_content} }
                 }
-                MsgLikeKind::Sticker(_) => {
-                    rsx! {
-                        ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                            span {
-                                style: "font-style: italic; color: gray;",
-                                "[Sticker]"
-                            }
-                        }
-                    }
-                }
-                MsgLikeKind::UnableToDecrypt(_) => {
-                    rsx! {
-                        ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                            span { "Unable to decrypt" }
-                        }
-                    }
-                }
-                MsgLikeKind::Redacted => {
-                    rsx! {
-                        ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                            span {
-                                style: "font-style: italic; color: gray;",
-                                "Message deleted"
-                            }
-                        }
-                    }
-                }
-                MsgLikeKind::Poll(_) => {
-                    rsx! {
-                        ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                            span {
-                                style: "font-style: italic; color: gray;",
-                                "[Poll]"
-                            }
-                        }
-                    }
-                }
-                MsgLikeKind::LiveLocation(_) => {
-                    rsx! {
-                        ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                            span {
-                                style: "font-style: italic; color: gray;",
-                                "[Live Location]"
-                            }
-                        }
-                    }
-                }
-                MsgLikeKind::Other(other) => {
-                    let other_text = format!("[Message-like Event: {}]", other.event_type());
-                    rsx! {
-                        ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                            span {
-                                style: "font-style: italic; color: gray;",
-                                "{other_text}"
-                            }
+            }
+            MsgLikeKind::Sticker(_) => {
+                rsx! {
+                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
+                        span {
+                            style: "font-style: italic; color: gray;",
+                            "[Sticker]"
                         }
                     }
                 }
             }
-        }
+            MsgLikeKind::UnableToDecrypt(_) => {
+                rsx! {
+                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
+                        span { "Unable to decrypt" }
+                    }
+                }
+            }
+            MsgLikeKind::Redacted => {
+                rsx! {
+                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
+                        span {
+                            style: "font-style: italic; color: gray;",
+                            "Message deleted"
+                        }
+                    }
+                }
+            }
+            MsgLikeKind::Poll(_) => {
+                rsx! {
+                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
+                        span {
+                            style: "font-style: italic; color: gray;",
+                            "[Poll]"
+                        }
+                    }
+                }
+            }
+            MsgLikeKind::LiveLocation(_) => {
+                rsx! {
+                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
+                        span {
+                            style: "font-style: italic; color: gray;",
+                            "[Live Location]"
+                        }
+                    }
+                }
+            }
+            MsgLikeKind::Other(other) => {
+                let other_text = format!("[Message-like Event: {}]", other.event_type());
+                rsx! {
+                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
+                        span {
+                            style: "font-style: italic; color: gray;",
+                            "{other_text}"
+                        }
+                    }
+                }
+            }
+        },
         TimelineItemContent::MembershipChange(change) => {
-            let change_text = format!("{} membership changed: {:?}", change.user_id(), change.change());
+            let change_text = format!(
+                "{} membership changed: {:?}",
+                change.user_id(),
+                change.change()
+            );
             rsx! {
                 div {
                     style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
@@ -166,11 +166,12 @@ pub fn render_timeline_event(
                 AnyOtherStateEventContentChange::RoomThirdPartyInvite(_) => {
                     format!("{} invited a guest via third-party invite", sender)
                 }
-                AnyOtherStateEventContentChange::RoomTombstone(_) => {
-                    "Room upgraded".to_string()
-                }
+                AnyOtherStateEventContentChange::RoomTombstone(_) => "Room upgraded".to_string(),
                 _ => {
-                    format!("Room state updated (type: {})", other_state.content().event_type())
+                    format!(
+                        "Room state updated (type: {})",
+                        other_state.content().event_type()
+                    )
                 }
             };
             rsx! {
@@ -181,7 +182,10 @@ pub fn render_timeline_event(
             }
         }
         TimelineItemContent::FailedToParseMessageLike { event_type, error } => {
-            let parse_text = format!("Failed to parse message-like event (type: {}): {}", event_type, error);
+            let parse_text = format!(
+                "Failed to parse message-like event (type: {}): {}",
+                event_type, error
+            );
             rsx! {
                 div {
                     style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
@@ -189,8 +193,13 @@ pub fn render_timeline_event(
                 }
             }
         }
-        TimelineItemContent::FailedToParseState { event_type, error, .. } => {
-            let parse_text = format!("Failed to parse state event (type: {}): {}", event_type, error);
+        TimelineItemContent::FailedToParseState {
+            event_type, error, ..
+        } => {
+            let parse_text = format!(
+                "Failed to parse state event (type: {}): {}",
+                event_type, error
+            );
             rsx! {
                 div {
                     style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
