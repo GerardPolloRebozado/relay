@@ -130,6 +130,7 @@ pub fn ParticipantsList(id: OwnedRoomId) -> Element {
     rsx! {
         div {
             class: Styles::list,
+            {format!("{} participants", user_list.len())}
             for user in user_list.read().iter() {
                 ParticipantCard { user: user.clone() },
             }
