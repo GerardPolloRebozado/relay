@@ -1,10 +1,10 @@
 use crate::state::app_state::AppState;
-use base64::{engine::general_purpose::STANDARD, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use dioxus::{hooks::use_context, signals::ReadableExt};
 use log::error;
 use matrix_sdk::{
     media::{MediaFormat, MediaRequestParameters, MediaThumbnailSettings},
-    ruma::{events::room::MediaSource, media::Method, OwnedMxcUri},
+    ruma::{OwnedMxcUri, events::room::MediaSource, media::Method},
 };
 
 pub async fn get_img(mxc: OwnedMxcUri) -> Option<String> {
@@ -32,7 +32,7 @@ pub async fn get_img(mxc: OwnedMxcUri) -> Option<String> {
     None
 }
 
-fn encode_to_data_uri(bytes: Vec<u8>) -> Option<String> {
+pub fn encode_to_data_uri(bytes: Vec<u8>) -> Option<String> {
     let b64_string = STANDARD.encode(&bytes);
     let mime_type = infer::get(&bytes);
     if mime_type.is_none() {
