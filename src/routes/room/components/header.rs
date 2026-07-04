@@ -12,7 +12,8 @@ pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
         let value = room_id.clone();
         async move {
             let state = use_context::<AppState>();
-            let client = state.matrix.read().client().await.unwrap();
+            let matrix_manager = state.matrix.read().clone();
+            let client = matrix_manager.client().await.unwrap();
             let room = client.get_room(&value);
             if room.is_none() {
                 error!("Could not get room");

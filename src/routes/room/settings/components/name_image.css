@@ -1,0 +1,4 @@
+.name_and_image {
+    display: flex;
+    gap: 4rem;
+}

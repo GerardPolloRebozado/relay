@@ -1,0 +1,11 @@
+.header {
+    background-color: var(--primary-color-2);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+
+    h2 {
+        margin: 0;
+    }
+}
