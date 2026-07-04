@@ -6,3 +6,9 @@
     flex-direction: column;
     gap: 2rem;
 }
+
+
+.header_buttons {
+    display: flex;
+    gap: 1rem;
+}

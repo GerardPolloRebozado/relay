@@ -1,9 +1,5 @@
 use dioxus::prelude::*;
-use matrix_sdk::{
-    media::MediaFormat,
-    room::RoomMemberRole,
-    ruma::{OwnedRoomId, events::room::power_levels::UserPowerLevel},
-};
+use matrix_sdk::{media::MediaFormat, room::RoomMemberRole, ruma::OwnedRoomId};
 
 use crate::{
     components::{
@@ -11,7 +7,7 @@ use crate::{
         badge::{Badge, BadgeVariant},
         card::{Card, CardContent},
     },
-    routes::{home::dm_utilities::get_room_avatar, router::Route},
+    routes::router::Route,
     state::app_state::AppState,
     utilities::media::encode_to_data_uri,
 };
