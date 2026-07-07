@@ -4,7 +4,7 @@ use matrix_sdk::config::StoreConfig;
 use matrix_sdk::cross_process_lock::CrossProcessLockConfig;
 use matrix_sdk::{AuthSession, Client, ClientBuilder};
 use matrix_sdk_sqlite::{SqliteCryptoStore, SqliteEventCacheStore, SqliteStateStore};
-use rand::{rngs::OsRng, TryRngCore};
+use rand::{TryRngCore, rngs::OsRng};
 use std::path::PathBuf;
 
 fn get_matrix_storage_dir() -> PathBuf {
@@ -51,6 +51,12 @@ pub async fn load_client_from_storage() -> Option<Client> {
         .event_cache_store(event_cache_store);
 
     let client = Client::builder()
+        .with_encryption_settings(matrix_sdk::encryption::EncryptionSettings {
+            auto_enable_cross_signing: true,
+            backup_download_strategy:
+                matrix_sdk::encryption::BackupDownloadStrategy::AfterDecryptionFailure,
+            auto_enable_backups: true,
+        })
         .homeserver_url(homeserver_url)
         .store_config(store_config)
         .build()
@@ -61,7 +67,10 @@ pub async fn load_client_from_storage() -> Option<Client> {
     if let Ok(serialized_session) = session_entry.get_password() {
         if let Ok(session) = serde_json::from_str::<MatrixSession>(&serialized_session) {
             if client.restore_session(session).await.is_ok() {
-                client.encryption().wait_for_e2ee_initialization_tasks().await;
+                client
+                    .encryption()
+                    .wait_for_e2ee_initialization_tasks()
+                    .await;
                 return Some(client);
             }
         }
@@ -120,9 +129,10 @@ pub async fn setup_client_builder(
         .await
         .map_err(|e| format!("Error opening crypto store: {}", e))?;
 
-    let event_cache_store = SqliteEventCacheStore::open(storage_dir.clone(), Some(passphrase.as_str()))
-        .await
-        .map_err(|e| format!("Error opening event store: {}", e))?;
+    let event_cache_store =
+        SqliteEventCacheStore::open(storage_dir.clone(), Some(passphrase.as_str()))
+            .await
+            .map_err(|e| format!("Error opening event store: {}", e))?;
 
     let store_config = StoreConfig::new(CrossProcessLockConfig::multi_process("relay"))
         .crypto_store(crypto_store)

@@ -50,9 +50,9 @@
     /* DX Component Tokens (Dark Mode) */
     --primary-color: #0f172a;
     --primary-color-1: #020617;
-    --primary-color-2: #0f172a; 
+    --primary-color-2: #0f172a;
     --primary-color-3: #1e293b; /* CARD BACKGROUND (Dark) - Slate 800 */
-    --primary-color-4: #1e293b; 
+    --primary-color-4: #1e293b;
     --primary-color-5: #334155; /* CARD BORDER (Dark) - Slate 700 */
     --primary-color-6: #475569;
     --primary-color-7: #94a3b8;
@@ -154,4 +154,10 @@ html.dark body {
 
 .no-link-highlight {
     text-decoration: none;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
