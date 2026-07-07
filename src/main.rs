@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 pub mod components;
+pub mod custom_types;
 pub mod layouts;
 pub mod routes;
 pub mod services;

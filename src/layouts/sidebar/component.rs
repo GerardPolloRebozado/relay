@@ -1,28 +1,16 @@
 use crate::{
-    components::{
-        avatar::{Avatar, AvatarFallback, AvatarImage, AvatarImageSize, AvatarShape, ImageAvatar},
-        item::ItemMediaVariant::Image,
-    },
-    routes::{
-        home::dm_utilities::{DMInfo, fetch_room_info, get_room_avatar},
-        router::Route,
-    },
+    components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar},
+    custom_types::rooms::SpaceInfo,
+    routes::{home::dm_utilities::get_room_avatar, router::Route},
     state::app_state::AppState,
 };
 use dioxus::prelude::*;
 use dioxus_icons::lucide::{House, Settings};
 use futures_util::{StreamExt, pin_mut};
-use matrix_sdk::{Room, media::MediaFormat};
 use matrix_sdk_ui::room_list_service::filters::new_filter_space;
 
 #[css_module("/src/layouts/sidebar/style.css")]
 struct Styles;
-
-#[derive(Clone, PartialEq, Eq)]
-struct SpaceInfo {
-    name: String,
-    avatar_url: String,
-}
 
 #[component]
 pub fn Sidebar() -> Element {
@@ -67,7 +55,11 @@ pub fn Sidebar() -> Element {
                             let avatar_url = get_room_avatar(&client, &space)
                                 .await
                                 .unwrap_or(String::new());
-                            new_list.push(SpaceInfo { name, avatar_url });
+                            new_list.push(SpaceInfo {
+                                id: space.room_id().to_owned(),
+                                name,
+                                avatar_url,
+                            });
                         }
                         space_list.set(new_list);
                     }
@@ -82,7 +74,11 @@ pub fn Sidebar() -> Element {
                             let avatar_url = get_room_avatar(&client, &space)
                                 .await
                                 .unwrap_or(String::new());
-                            space_list.write().push(SpaceInfo { name, avatar_url });
+                            space_list.write().push(SpaceInfo {
+                                id: space.room_id().to_owned(),
+                                name,
+                                avatar_url,
+                            });
                         }
                     }
                     matrix_sdk_ui::eyeball_im::VectorDiff::Append { values } => {
@@ -96,7 +92,11 @@ pub fn Sidebar() -> Element {
                             let avatar_url = get_room_avatar(&client, &space)
                                 .await
                                 .unwrap_or(String::new());
-                            space_list.write().push(SpaceInfo { name, avatar_url });
+                            space_list.write().push(SpaceInfo {
+                                id: space.room_id().to_owned(),
+                                name,
+                                avatar_url,
+                            });
                         }
                     }
                     matrix_sdk_ui::eyeball_im::VectorDiff::Clear => {
@@ -179,12 +179,15 @@ fn NavItem(to: Route, icon: Element, active: bool) -> Element {
 #[component]
 fn SpaceIcon(space: SpaceInfo) -> Element {
     rsx! {
-        ImageAvatar {
-            class: Styles::space_icon,
-            size: AvatarImageSize::Medium,
-            shape: AvatarShape::Rounded,
-            src: space.avatar_url,
-            {space.name.get(0..1)},
+        Link {
+            to: Route::SpacePage { id: space.id },
+            ImageAvatar {
+                class: Styles::space_icon,
+                size: AvatarImageSize::Medium,
+                shape: AvatarShape::Rounded,
+                src: space.avatar_url,
+                {space.name.get(0..1)},
+            }
         }
     }
 }

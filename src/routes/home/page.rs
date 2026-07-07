@@ -7,7 +7,7 @@ use crate::state::app_state::AppState;
 use dioxus::prelude::*;
 use futures_util::{StreamExt, pin_mut};
 use matrix_sdk::ruma::OwnedRoomId;
-use matrix_sdk_ui::room_list_service::filters::{self, new_filter_identifiers, new_filter_not};
+use matrix_sdk_ui::room_list_service::filters::{new_filter_identifiers, new_filter_not};
 use matrix_sdk_ui::spaces::SpaceService;
 
 #[css_module("/src/routes/home/page.css")]
