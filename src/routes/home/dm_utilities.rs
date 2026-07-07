@@ -1,12 +1,12 @@
-use base64::{engine::general_purpose::STANDARD, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use log::{debug, error};
 use matrix_sdk::room::{Messages, MessagesOptions};
+use matrix_sdk::ruma::UInt;
 use matrix_sdk::ruma::api::Direction::Backward;
 use matrix_sdk::ruma::media::Method;
-use matrix_sdk::ruma::UInt;
 use matrix_sdk::{
-    media::{MediaFormat, MediaThumbnailSettings},
     Client, Room, RoomMemberships,
+    media::{MediaFormat, MediaThumbnailSettings},
 };
 
 pub async fn get_room_avatar(client: &Client, room: &Room) -> Option<String> {
@@ -80,8 +80,8 @@ impl PartialEq for DMInfo {
 }
 
 pub async fn fetch_room_info(room: Room, client: Client) -> DMInfo {
-    use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
     use matrix_sdk::ruma::events::room::message::MessageType;
+    use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 
     let display_name = room.display_name().await;
     let name = match display_name {
@@ -97,9 +97,8 @@ pub async fn fetch_room_info(room: Room, client: Client) -> DMInfo {
             let Ok(event) = timeline_event.raw().deserialize() else {
                 continue;
             };
-            if let AnySyncTimelineEvent::MessageLike(
-                AnySyncMessageLikeEvent::RoomMessage(msg),
-            ) = event
+            if let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(msg)) =
+                event
             {
                 if let Some(original_msg) = msg.as_original() {
                     if let MessageType::Text(text_msg) = &original_msg.content.msgtype {

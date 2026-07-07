@@ -1,3 +1,4 @@
+pub mod alert_dialog;
 pub mod avatar;
 pub mod badge;
 pub mod button;
@@ -12,5 +13,5 @@ pub mod notification;
 pub mod popover;
 pub mod scroll_area;
 pub mod separator;
+pub mod spinner;
 pub mod tooltip;
-pub mod alert_dialog;
