@@ -1,9 +1,10 @@
 use crate::components::scroll_area::ScrollArea;
 use crate::components::spinner::Spinner;
 use crate::routes::home::components::{DMCard, NewRoom};
-use crate::routes::home::dm_utilities::{DMInfo, fetch_room_info};
+use crate::routes::home::dm_utilities::DMInfo;
 use crate::routes::router::Route;
 use crate::state::app_state::AppState;
+use crate::utilities::room::{fetch_room_info, room_list_filler};
 use dioxus::prelude::*;
 use futures_util::{StreamExt, pin_mut};
 use matrix_sdk::ruma::OwnedRoomId;
@@ -22,21 +23,7 @@ pub fn Home() -> Element {
     use_future(move || async move {
         let matrix = state.matrix.cloned();
 
-        let (client, room_list_service) = (matrix.client().await, matrix.room_list_service().await);
-
-        let (Some(client), Some(room_list_service)) = (client, room_list_service) else {
-            navigator().push(Route::Login);
-            return;
-        };
-        let all_rooms_list = match room_list_service.all_rooms().await {
-            Ok(list) => list,
-            Err(e) => {
-                error!("Failed to get all_rooms: {:?}", e);
-                return;
-            }
-        };
-        let (room_list_stream, controller) = all_rooms_list.entries_with_dynamic_adapters(10);
-        pin_mut!(room_list_stream);
+        let client = matrix.client().await.unwrap();
 
         // show anything but spaces and its group rooms
         let space_service = SpaceService::new(client.clone()).await;
@@ -45,45 +32,15 @@ pub fn Home() -> Element {
             .iter()
             .flat_map(|filter| filter.descendants.clone())
             .collect();
-        controller.set_filter(Box::new(new_filter_not(Box::new(new_filter_identifiers(
-            all_space_descendants,
-        )))));
-
-        while let Some(diffs) = room_list_stream.next().await {
-            for diff in diffs {
-                match diff {
-                    matrix_sdk_ui::eyeball_im::VectorDiff::Reset { values } => {
-                        let mut new_list = Vec::new();
-                        for item in values {
-                            let room = item.into_inner();
-                            new_list.push(fetch_room_info(room, client.clone()).await);
-                        }
-                        rooms_list.set(new_list);
-                        *is_loading.write() = false;
-                    }
-                    matrix_sdk_ui::eyeball_im::VectorDiff::PushBack { value } => {
-                        let room = value.into_inner();
-                        if room.is_dm() {
-                            let info = fetch_room_info(room, client.clone()).await;
-                            rooms_list.write().push(info);
-                            *is_loading.write() = false;
-                        }
-                    }
-                    matrix_sdk_ui::eyeball_im::VectorDiff::Append { values } => {
-                        for item in values {
-                            let room = item.into_inner();
-                            let info = fetch_room_info(room, client.clone()).await;
-                            rooms_list.write().push(info);
-                            *is_loading.write() = false;
-                        }
-                    }
-                    matrix_sdk_ui::eyeball_im::VectorDiff::Clear => {
-                        rooms_list.set(Vec::new());
-                    }
-                    _ => {}
-                }
-            }
-        }
+        room_list_filler(
+            &mut rooms_list,
+            Box::new(new_filter_not(Box::new(new_filter_identifiers(
+                all_space_descendants,
+            )))),
+            &mut is_loading,
+        )
+        .await;
+        is_loading.set(false);
     });
 
     rsx! {
@@ -102,12 +59,7 @@ pub fn Home() -> Element {
                     rsx!{
                     ScrollArea { class: "room-list-scroll",
                         div { class: Styles::room_list,
-                            if !*state.first_sync_done.read() {
-                                div { class: Styles::empty_state,
-                                    div { class: "loader" }
-                                    p { "Loading conversations..." }
-                                }
-                            } else if rooms_list.read().is_empty() {
+                            if rooms_list.read().is_empty() {
                                 div { class: Styles::empty_state,
                                     p { "No conversations found." }
                                 }
