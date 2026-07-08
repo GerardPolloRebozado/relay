@@ -16,7 +16,6 @@ use crate::{
 #[component]
 pub fn SpacePage(id: OwnedRoomId) -> Element {
     let mut space = use_signal(|| None::<Room>);
-    let mut space_info = use_signal(|| None::<SpaceInfo>);
 
     use_future(move || {
         let cloned_id = id.clone();
@@ -36,22 +35,6 @@ pub fn SpacePage(id: OwnedRoomId) -> Element {
                 return;
             }
             space.set(_space.clone());
-            let _space = _space.unwrap();
-
-            let display_name = _space.display_name().await;
-            let name = match display_name {
-                Ok(dn) => dn.to_string(),
-                Err(_) => "Unknown Space".to_string(),
-            };
-            let avatar_url = get_room_avatar(&client, &_space)
-                .await
-                .unwrap_or(String::new());
-
-            space_info.set(Some(SpaceInfo {
-                id: _space.room_id().to_owned(),
-                name,
-                avatar_url,
-            }));
         }
     });
 
