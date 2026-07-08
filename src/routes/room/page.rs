@@ -15,11 +15,14 @@ struct Styles;
 
 #[component]
 pub fn RoomPage(id: OwnedRoomId) -> Element {
-    let cloned_id = id.clone();
+    let mut id_signal = use_signal(|| id.clone());
+    if *id_signal.read() != id {
+        id_signal.set(id.clone());
+    }
     let mut room = use_signal(|| None::<Room>);
 
     use_future(move || {
-        let value = cloned_id.clone();
+        let value = id_signal.read().clone();
         async move {
             let state = use_context::<AppState>();
             let client = state.matrix.read().client().await.unwrap();

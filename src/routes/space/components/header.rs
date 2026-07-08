@@ -1,5 +1,6 @@
 use crate::components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar};
 use crate::components::header::Header;
+use crate::components::spinner::Spinner;
 use crate::routes::home::dm_utilities::get_room_avatar;
 use crate::routes::router::Route;
 use crate::state::app_state::AppState;
@@ -13,37 +14,36 @@ struct Styles;
 
 #[component]
 pub fn SpaceHeader(space: RoomContainer) -> Element {
-    let mut space_name = use_signal(|| "Unknown room".to_string());
-    let mut avatar_url = use_signal(String::new);
+    let state = use_context::<AppState>();
+    let cloned_space = space.clone();
+    let mut memo_space = use_signal(|| cloned_space.clone());
+    if *memo_space.read() != space {
+        memo_space.set(space.clone());
+    }
+
+    let space_info = use_resource(move || {
+        let _cloned_space = memo_space.read().clone();
+        let matrix_manager = state.matrix.read().clone();
+        async move {
+            let client = matrix_manager.client().await.unwrap();
+            let display_name = _cloned_space.0.display_name().await;
+            let name = match display_name {
+                Ok(dn) => dn.to_string(),
+                Err(_) => "Unknown Space".to_string(),
+            };
+            let avatar_url = get_room_avatar(&client, &_cloned_space.0)
+                .await
+                .unwrap_or(String::new());
+            (name, avatar_url)
+        }
+    });
 
     if space.0.room_type().is_none() || space.0.room_type().unwrap() != RoomType::Space {
         navigator().push(Route::Home);
     }
 
-    use_future(move || {
-        let cloned_space = space.clone();
-        async move {
-            let state = use_context::<AppState>();
-            let matrix_manager = state.matrix.read().clone();
-            let client = matrix_manager.client().await.unwrap();
-
-            let display_name = cloned_space.0.display_name().await;
-            let name = match display_name {
-                Ok(dn) => dn.to_string(),
-                Err(_) => "Unknown Space".to_string(),
-            };
-            let _avatar_url = get_room_avatar(&client, &cloned_space.0)
-                .await
-                .unwrap_or(String::new());
-
-            space_name.set(name);
-            avatar_url.set(_avatar_url);
-        }
-    });
-
-    let cloned_name = space_name.read().clone();
-    let short_name = cloned_name.get(0..1);
-    rsx! {
+    match &*space_info.read_unchecked() {
+        Some((name, avatar_url)) => rsx! {
             Header {
                 div {
                     class: Styles::name_image,
@@ -51,12 +51,14 @@ pub fn SpaceHeader(space: RoomContainer) -> Element {
                         size: AvatarImageSize::Medium,
                         shape: AvatarShape::Rounded,
                         src: avatar_url,
-                        {short_name},
+                        {name.clone()},
                     }
                     h2 {
-                        {space_name}
+                        {name.clone()}
                     }
                 }
             }
+        },
+        None => rsx! { Spinner {} },
     }
 }
