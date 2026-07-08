@@ -81,9 +81,13 @@
 .space_icon {
     transition: all 0.2s ease-in-out;
     cursor: pointer;
+    border: 0.2rem solid var(--border);
 
     &:hover {
-        border: 0.2rem solid var(--border);
         transform: scale(0.9);
+    }
+
+    &[role=current_page] {
+        border: 0.2rem solid var(--focused-border-color);
     }
 }

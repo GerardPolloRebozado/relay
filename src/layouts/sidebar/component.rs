@@ -178,10 +178,19 @@ fn NavItem(to: Route, icon: Element, active: bool) -> Element {
 
 #[component]
 fn SpaceIcon(space: SpaceInfo) -> Element {
+    let route: Route = use_route();
+    let mut role = "link";
+
+    if let Route::SpacePage { id } = route
+        && id == space.id
+    {
+        role = "current_page";
+    }
     rsx! {
         Link {
             to: Route::SpacePage { id: space.id },
             ImageAvatar {
+                role,
                 class: Styles::space_icon,
                 size: AvatarImageSize::Medium,
                 shape: AvatarShape::Rounded,
