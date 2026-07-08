@@ -3,6 +3,9 @@ use matrix_sdk::ruma::OwnedRoomId;
 
 use crate::{routes::router::Route, state::app_state::AppState};
 
+#[css_module("src/routes/room/components/header.css")]
+struct Styles;
+
 #[component]
 pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
     let mut room_name = use_signal(|| "Room".to_string());
@@ -28,9 +31,11 @@ pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
 
     rsx! {
         div {
+            class: Styles::name_image,
             onclick: move | _evt: MouseEvent| {
                 navigator().push(Route::RoomSettingsPage{id: cloned_room_id.clone()});
             },
+                                GoBackButton{},
         h2 {
             "{room_name}"
         }

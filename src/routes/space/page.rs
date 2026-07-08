@@ -1,5 +1,6 @@
 use crate::components::spinner::Spinner;
 use crate::routes::space::components::header::SpaceHeader;
+use crate::routes::space::components::room_list::SpaceRoomListPage;
 use dioxus::prelude::*;
 use matrix_sdk::ruma::OwnedRoomId;
 
@@ -50,6 +51,7 @@ pub fn SpacePage(id: OwnedRoomId) -> Element {
             match &*space_resource.read_unchecked() {
                 Some(Some(actual_space)) => rsx! {
                     SpaceHeader { space: RoomContainer::new(actual_space.clone()) }
+                    SpaceRoomListPage { space: RoomContainer::new(actual_space.clone())}
                 },
                 Some(None) => rsx! { div { "Redirecting..." } },
                 None => rsx! { Spinner {} }

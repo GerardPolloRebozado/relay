@@ -8,7 +8,7 @@ use crate::{
 };
 use dioxus::prelude::*;
 use matrix_sdk::ruma::OwnedRoomId;
-use matrix_sdk::{room::Room, RoomState};
+use matrix_sdk::{RoomState, room::Room};
 
 #[css_module("/src/routes/room/page.css")]
 struct Styles;
@@ -25,7 +25,8 @@ pub fn RoomPage(id: OwnedRoomId) -> Element {
         let value = id_signal.read().clone();
         async move {
             let state = use_context::<AppState>();
-            let client = state.matrix.read().client().await.unwrap();
+            let matrix_state = state.matrix.read().clone();
+            let client = matrix_state.client().await.unwrap();
             let mut _room = client.get_room(&value);
             if _room.is_none() {
                 error!("Could not get room");

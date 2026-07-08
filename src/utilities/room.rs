@@ -5,14 +5,14 @@ use matrix_sdk_ui::room_list_service::filters::BoxedFilterFn;
 
 use crate::{
     routes::{
-        home::dm_utilities::{DMInfo, get_last_message_in_room, get_room_avatar},
+        home::dm_utilities::{RoomInfo, get_last_message_in_room, get_room_avatar},
         router::Route,
     },
     state::app_state::AppState,
 };
 
 pub async fn room_list_filler(
-    rooms_list: &mut Signal<Vec<DMInfo>>,
+    rooms_list: &mut Signal<Vec<RoomInfo>>,
     filters: BoxedFilterFn,
     is_loading: &mut Signal<bool>,
 ) {
@@ -73,7 +73,7 @@ pub async fn room_list_filler(
     }
 }
 
-pub async fn fetch_room_info(room: Room, client: Client) -> DMInfo {
+pub async fn fetch_room_info(room: Room, client: Client) -> RoomInfo {
     use matrix_sdk::ruma::events::room::message::MessageType;
     use matrix_sdk::ruma::events::{AnySyncMessageLikeEvent, AnySyncTimelineEvent};
 
@@ -103,7 +103,7 @@ pub async fn fetch_room_info(room: Room, client: Client) -> DMInfo {
             }
         }
     }
-    DMInfo {
+    RoomInfo {
         room,
         name,
         avatar_url,

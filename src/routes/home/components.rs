@@ -1,4 +1,4 @@
-use crate::routes::home::dm_utilities::DMInfo;
+use crate::routes::home::dm_utilities::RoomInfo;
 use crate::{
     components::{
         avatar::{AvatarImageSize, ImageAvatar},
@@ -17,14 +17,14 @@ use dioxus::prelude::*;
 use dioxus_icons::lucide::Plus;
 use dioxus_icons::lucide::User;
 use dioxus_router::components::Link;
-use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoomRequest;
 use matrix_sdk::ruma::UserId;
+use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoomRequest;
 
 #[css_module("/src/routes/home/components.css")]
 struct Styles;
 
 #[component]
-pub fn DMCard(dm: DMInfo) -> Element {
+pub fn RoomCard(dm: RoomInfo) -> Element {
     let unread_counts = dm.room.unread_notification_counts();
     let notification_count = unread_counts.notification_count;
     let highlight_count = unread_counts.highlight_count;
