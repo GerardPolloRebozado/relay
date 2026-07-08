@@ -1,4 +1,5 @@
 use crate::components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar};
+use crate::components::go_back::GoBackButton;
 use crate::components::header::Header;
 use crate::components::spinner::Spinner;
 use crate::routes::home::dm_utilities::get_room_avatar;
@@ -47,6 +48,7 @@ pub fn SpaceHeader(space: RoomContainer) -> Element {
             Header {
                 div {
                     class: Styles::name_image,
+                    GoBackButton{},
                     ImageAvatar {
                         size: AvatarImageSize::Medium,
                         shape: AvatarShape::Rounded,

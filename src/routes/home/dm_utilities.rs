@@ -63,14 +63,14 @@ pub async fn get_last_message_in_room(room: &Room) -> Option<Messages> {
 }
 
 #[derive(Clone)]
-pub struct DMInfo {
+pub struct RoomInfo {
     pub room: Room,
     pub name: String,
     pub avatar_url: String,
     pub last_message: String,
 }
 
-impl PartialEq for DMInfo {
+impl PartialEq for RoomInfo {
     fn eq(&self, other: &Self) -> bool {
         self.room.room_id() == other.room.room_id()
             && self.name == other.name

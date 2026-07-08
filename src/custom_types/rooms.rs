@@ -18,6 +18,6 @@ impl PartialEq for RoomContainer {
 
 impl RoomContainer {
     pub fn new(room: Room) -> Self {
-        Self { 0: room }
+        Self(room)
     }
 }

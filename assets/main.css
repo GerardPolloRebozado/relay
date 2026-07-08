@@ -161,3 +161,9 @@ html.dark body {
     justify-content: center;
     align-items: center;
 }
+
+.room_list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
