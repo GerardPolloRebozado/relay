@@ -187,8 +187,10 @@ fn SpaceIcon(space: SpaceInfo) -> Element {
         role = "current_page";
     }
     rsx! {
-        Link {
-            to: Route::SpacePage { id: space.id },
+        div {
+            onclick: move |_| {
+                navigator().push(Route::SpacePage { id: space.id.clone() });
+            },
             ImageAvatar {
                 role,
                 class: Styles::space_icon,
