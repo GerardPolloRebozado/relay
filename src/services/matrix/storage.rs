@@ -64,16 +64,15 @@ pub async fn load_client_from_storage() -> Option<Client> {
         .ok()?;
 
     let session_entry = Entry::new(KEYCHAIN_SERVICE, KEYCHAIN_SESSION).ok()?;
-    if let Ok(serialized_session) = session_entry.get_password() {
-        if let Ok(session) = serde_json::from_str::<MatrixSession>(&serialized_session) {
-            if client.restore_session(session).await.is_ok() {
-                client
-                    .encryption()
-                    .wait_for_e2ee_initialization_tasks()
-                    .await;
-                return Some(client);
-            }
-        }
+    if let Ok(serialized_session) = session_entry.get_password()
+        && let Ok(session) = serde_json::from_str::<MatrixSession>(&serialized_session)
+        && client.restore_session(session).await.is_ok()
+    {
+        client
+            .encryption()
+            .wait_for_e2ee_initialization_tasks()
+            .await;
+        return Some(client);
     }
 
     None

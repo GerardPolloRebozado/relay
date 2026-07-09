@@ -3,6 +3,8 @@ use matrix_sdk::ruma::OwnedRoomId;
 
 use crate::{routes::router::Route, state::app_state::AppState};
 
+use crate::components::go_back::GoBackButton;
+
 #[css_module("src/routes/room/components/header.css")]
 struct Styles;
 
