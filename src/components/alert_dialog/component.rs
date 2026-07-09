@@ -17,10 +17,7 @@ pub fn AlertDialog(props: AlertDialogRootProps) -> Element {
             open: props.open,
             on_open_change: props.on_open_change,
             attributes: props.attributes,
-            alert_dialog::AlertDialogContent {
-                class: Styles::dx_alert_dialog.to_string(),
-                {props.children}
-            }
+            alert_dialog::AlertDialogContent { class: Styles::dx_alert_dialog.to_string(), {props.children} }
         }
     }
 }
@@ -50,7 +47,11 @@ pub fn AlertDialogDescription(props: AlertDialogDescriptionProps) -> Element {
 #[component]
 pub fn AlertDialogActions(props: AlertDialogActionsProps) -> Element {
     rsx! {
-        alert_dialog::AlertDialogActions { class: Styles::dx_alert_dialog_actions, attributes: props.attributes, {props.children} }
+        alert_dialog::AlertDialogActions {
+            class: Styles::dx_alert_dialog_actions,
+            attributes: props.attributes,
+            {props.children}
+        }
     }
 }
 

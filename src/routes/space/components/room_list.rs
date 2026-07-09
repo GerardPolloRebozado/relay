@@ -51,9 +51,8 @@ pub fn SpaceRoomListPage(space: RoomContainer) -> Element {
             }
         } else {
             rsx! {
-                div {
-                    class: Styles::room_list,
-                ScrollArea {
+                div { class: Styles::room_list,
+                    ScrollArea {
                         if rooms_list.read().is_empty() {
                             div {
                                 p { "No conversations found." }
@@ -62,8 +61,8 @@ pub fn SpaceRoomListPage(space: RoomContainer) -> Element {
                             for dminfo in rooms_list.read().iter() {
                                 RoomCard { dm: dminfo.clone() }
                             }
+                        }
                     }
-                }
                 }
             }
         }

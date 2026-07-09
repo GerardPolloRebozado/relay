@@ -27,47 +27,29 @@ struct BasicUserInfo {
 fn ParticipantCard(user: BasicUserInfo) -> Element {
     rsx! {
         Card {
-            CardContent {
-            class: Styles::user_card,
-            ImageAvatar {
-                src: user.avatar_url,
-                size: AvatarImageSize::Large,
-            }
-            div {
-                p {
-                    {user.name}
+            CardContent { class: Styles::user_card,
+                ImageAvatar { src: user.avatar_url, size: AvatarImageSize::Large }
+                div {
+                    p { {user.name} }
+                    p { {user.id} }
                 }
-                p {
-                    {user.id}
-                }
-            }
-            div {
-                class: Styles::badge_container,
-                {
-                    match user.role {
-                        RoomMemberRole::Creator => rsx!{
-                            Badge {
-                                {"Creator"}
-                            }
-                        },
-                        RoomMemberRole::Administrator => rsx!{
-                            Badge{
-                                {"Administrator"}
-                            }
-                        },
-                        RoomMemberRole::Moderator => rsx!{
-                            Badge{
-                                {"Moderator"}
-                            }
-                        },
-                        RoomMemberRole::User => rsx!{
-                            Badge{
-                                variant: BadgeVariant::Secondary,
-                                {"User"}
-                            }
-                        },
+                div { class: Styles::badge_container,
+                    {
+                        match user.role {
+                            RoomMemberRole::Creator => rsx! {
+                                Badge { {"Creator"} }
+                            },
+                            RoomMemberRole::Administrator => rsx! {
+                                Badge { {"Administrator"} }
+                            },
+                            RoomMemberRole::Moderator => rsx! {
+                                Badge { {"Moderator"} }
+                            },
+                            RoomMemberRole::User => rsx! {
+                                Badge { variant: BadgeVariant::Secondary, {"User"} }
+                            },
+                        }
                     }
-                }
                 }
             }
         }
@@ -124,11 +106,10 @@ pub fn ParticipantsList(id: OwnedRoomId) -> Element {
     });
 
     rsx! {
-        div {
-            class: Styles::list,
+        div { class: Styles::list,
             {format!("{} participants", user_list.len())}
             for user in user_list.read().iter() {
-                ParticipantCard { user: user.clone() },
+                ParticipantCard { user: user.clone() }
             }
         }
     }

@@ -48,26 +48,32 @@ pub fn MessageInput(
                     let room = client.get_room(&room_id).unwrap();
                     let timeline = room.timeline().await.unwrap();
                     if !text_to_send.trim().is_empty() {
-                        let _ = timeline.send(AnyMessageLikeEventContent::RoomMessage(RoomMessageEventContent::text_plain(text_to_send))).await;
+                        let _ = timeline
+                            .send(
+                                AnyMessageLikeEventContent::RoomMessage(
+                                    RoomMessageEventContent::text_plain(text_to_send),
+                                ),
+                            )
+                            .await;
                     }
-
                     for file in files_to_send {
                         let file_name = file.name();
                         if let Ok(bytes) = file.read_bytes().await {
-                             let mime_type = mime_guess::from_path(std::path::Path::new(&file_name)).first_or_octet_stream();
-                             let source = AttachmentSource::Data {
-                                 filename: file_name,
-                                 bytes: bytes.to_vec(),
-                             };
-
-                             let config = AttachmentConfig::default();
-                             let _ = timeline.send_attachment(source, mime_type, config).await;
+                            let mime_type = mime_guess::from_path(
+                                    std::path::Path::new(&file_name),
+                                )
+                                .first_or_octet_stream();
+                            let source = AttachmentSource::Data {
+                                filename: file_name,
+                                bytes: bytes.to_vec(),
+                            };
+                            let config = AttachmentConfig::default();
+                            let _ = timeline.send_attachment(source, mime_type, config).await;
                         }
                     }
                 });
             },
-            div {
-                class: Styles::file_input_wrapper,
+            div { class: Styles::file_input_wrapper,
                 Input {
                     key: "{file_input_key}",
                     r#type: "file",
@@ -78,22 +84,18 @@ pub fn MessageInput(
                         for file in e.files() {
                             selected_files.write().push(file);
                         }
-                    }
-                },
-                Label {
-                    html_for: "file",
-                    div {
-                        class: Styles::plus_button,
-                        Plus {}
-                    }
+                    },
                 }
-            },
+                Label { html_for: "file",
+                    div { class: Styles::plus_button, Plus {} }
+                }
+            }
             Input {
                 r#type: "text",
                 placeholder: "Type a message...",
                 name: "text",
                 value: "{text_input}",
-                oninput: move |e: Event<FormData>| text_input.set(e.value())
+                oninput: move |e: Event<FormData>| text_input.set(e.value()),
             }
             Button {
                 r#type: "submit",

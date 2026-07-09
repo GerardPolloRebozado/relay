@@ -15,74 +15,86 @@ pub fn render_timeline_event(
         TimelineItemContent::MsgLike(msg_like) => match &msg_like.kind {
             MsgLikeKind::Message(msg) => {
                 let bubble_content = match msg.msgtype() {
-                    MessageType::Text(text) => rsx! { span { "{text.body}" } },
+                    MessageType::Text(text) => rsx! {
+                        span { "{text.body}" }
+                    },
                     MessageType::Image(img) => rsx! {
                         ImageMessage { payload: ImagePayload(img.clone()) }
                     },
                     MessageType::Video(video) => rsx! {
                         span { "[Video: {video.body}]" }
                     },
-                    _ => rsx! { span { "[Unsupported File]" } },
+                    _ => rsx! {
+                        span { "[Unsupported File]" }
+                    },
                 };
                 rsx! {
-                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(), {bubble_content} }
+                    ChatBubble {
+                        sender: sender.to_string(),
+                        is_me,
+                        time_of_event: time_of_event.to_string(),
+                        {bubble_content}
+                    }
                 }
             }
             MsgLikeKind::Sticker(_) => {
                 rsx! {
-                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                        span {
-                            style: "font-style: italic; color: gray;",
-                            "[Sticker]"
-                        }
+                    ChatBubble {
+                        sender: sender.to_string(),
+                        is_me,
+                        time_of_event: time_of_event.to_string(),
+                        span { style: "font-style: italic; color: gray;", "[Sticker]" }
                     }
                 }
             }
             MsgLikeKind::UnableToDecrypt(_) => {
                 rsx! {
-                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
+                    ChatBubble {
+                        sender: sender.to_string(),
+                        is_me,
+                        time_of_event: time_of_event.to_string(),
                         span { "Unable to decrypt" }
                     }
                 }
             }
             MsgLikeKind::Redacted => {
                 rsx! {
-                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                        span {
-                            style: "font-style: italic; color: gray;",
-                            "Message deleted"
-                        }
+                    ChatBubble {
+                        sender: sender.to_string(),
+                        is_me,
+                        time_of_event: time_of_event.to_string(),
+                        span { style: "font-style: italic; color: gray;", "Message deleted" }
                     }
                 }
             }
             MsgLikeKind::Poll(_) => {
                 rsx! {
-                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                        span {
-                            style: "font-style: italic; color: gray;",
-                            "[Poll]"
-                        }
+                    ChatBubble {
+                        sender: sender.to_string(),
+                        is_me,
+                        time_of_event: time_of_event.to_string(),
+                        span { style: "font-style: italic; color: gray;", "[Poll]" }
                     }
                 }
             }
             MsgLikeKind::LiveLocation(_) => {
                 rsx! {
-                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                        span {
-                            style: "font-style: italic; color: gray;",
-                            "[Live Location]"
-                        }
+                    ChatBubble {
+                        sender: sender.to_string(),
+                        is_me,
+                        time_of_event: time_of_event.to_string(),
+                        span { style: "font-style: italic; color: gray;", "[Live Location]" }
                     }
                 }
             }
             MsgLikeKind::Other(other) => {
                 let other_text = format!("[Message-like Event: {}]", other.event_type());
                 rsx! {
-                    ChatBubble { sender: sender.to_string(), is_me, time_of_event: time_of_event.to_string(),
-                        span {
-                            style: "font-style: italic; color: gray;",
-                            "{other_text}"
-                        }
+                    ChatBubble {
+                        sender: sender.to_string(),
+                        is_me,
+                        time_of_event: time_of_event.to_string(),
+                        span { style: "font-style: italic; color: gray;", "{other_text}" }
                     }
                 }
             }
@@ -94,8 +106,7 @@ pub fn render_timeline_event(
                 change.change()
             );
             rsx! {
-                div {
-                    style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
+                div { style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
                     "{change_text}"
                 }
             }
@@ -103,8 +114,7 @@ pub fn render_timeline_event(
         TimelineItemContent::ProfileChange(change) => {
             let prof_text = format!("{} updated their profile", change.user_id());
             rsx! {
-                div {
-                    style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
+                div { style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
                     "{prof_text}"
                 }
             }
@@ -167,8 +177,7 @@ pub fn render_timeline_event(
                 }
             };
             rsx! {
-                div {
-                    style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
+                div { style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
                     "{state_text}"
                 }
             }
@@ -179,8 +188,7 @@ pub fn render_timeline_event(
                 event_type, error
             );
             rsx! {
-                div {
-                    style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
+                div { style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
                     "{parse_text}"
                 }
             }
@@ -193,24 +201,21 @@ pub fn render_timeline_event(
                 event_type, error
             );
             rsx! {
-                div {
-                    style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
+                div { style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
                     "{parse_text}"
                 }
             }
         }
         TimelineItemContent::CallInvite => {
             rsx! {
-                div {
-                    style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
+                div { style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
                     "Call invite received"
                 }
             }
         }
         TimelineItemContent::RtcNotification { .. } => {
             rsx! {
-                div {
-                    style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
+                div { style: "text-align: center; color: gray; font-size: 0.875rem; font-style: italic; margin: 0.5rem 0;",
                     "Call notification received"
                 }
             }

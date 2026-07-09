@@ -123,12 +123,9 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                 if selected_users.len() > 0 {
                     rsx! {
                         div {
-                            p{
-                                {"Selected users: ".to_string()},
-                            }
-                            div {
-                            class: Styles::selected_users_list,
-                            for (i, user) in selected_users.iter().enumerate() {
+                            p { {"Selected users: ".to_string()} }
+                            div { class: Styles::selected_users_list,
+                                for (i, user) in selected_users.iter().enumerate() {
                                     Item {
                                         class: Styles::selected_user,
                                         onclick: move |_| {
@@ -147,14 +144,14 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                                                 }
                                             }
                                         }
-                                            {user.user_id.as_str()}
+                                        {user.user_id.as_str()}
                                     }
-                            }
+                                }
                             }
                         }
                     }
                 } else {
-                    rsx!{}
+                    rsx! {}
                 }
             }
             Input {
@@ -162,18 +159,20 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                 value: search_term,
                 placeholder: "Search user",
             }
-            div {
-                class: Styles::search_results_list,
+            div { class: Styles::search_results_list,
                 for user in search_results.read().iter() {
                     {
-                    let user_clone = user.clone();
-                    let avatar_url = user.avatar_url.clone().unwrap_or_default();
+                        let user_clone = user.clone();
+                        let avatar_url = user.avatar_url.clone().unwrap_or_default();
                         rsx! {
                             Item {
                                 class: Styles::search_results_card,
-                                onclick: move | _ | {
+                                onclick: move |_| {
                                     let mut selected = selected_users.write();
-                                    if let Some(index) = selected.iter().position(|u| u.user_id == user_clone.user_id) {
+                                    if let Some(index) = selected
+                                        .iter()
+                                        .position(|u| u.user_id == user_clone.user_id)
+                                    {
                                         selected.remove(index);
                                     } else {
                                         selected.push(user_clone.clone());
@@ -186,31 +185,32 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
                                     size: AvatarImageSize::Medium,
                                     User {}
                                 }
-                                p {
-                                    {user.user_id.as_str()}
-                                }
+                                p { {user.user_id.as_str()} }
                             }
                         }
                     }
                 }
             }
             Button {
-                onclick: move | _ | {
+                onclick: move |_| {
                     spawn(async move {
-                    let client = app_state.matrix.cloned().client().await.unwrap();
-                    let mut request = CreateRoomRequest::new();
-                    for user in selected_users.read().iter() {
-                        let user_id = UserId::parse(user.user_id.clone()).unwrap();
-                        request.invite.push(user_id);
-                    }
-                    let result = client.create_room(request).await;
-                    if result.is_err() {
-                        // TODO: proper error handling
-                        error!("Error creating a new room");
-                        return;
-                    }
-                    let result = result.unwrap();
-                      navigator().push(Route::RoomPage { id: result.room_id().to_owned() });
+                        let client = app_state.matrix.cloned().client().await.unwrap();
+                        let mut request = CreateRoomRequest::new();
+                        for user in selected_users.read().iter() {
+                            let user_id = UserId::parse(user.user_id.clone()).unwrap();
+                            request.invite.push(user_id);
+                        }
+                        let result = client.create_room(request).await;
+                        if result.is_err() {
+                            // TODO: proper error handling
+                            error!("Error creating a new room");
+                            return;
+                        }
+                        let result = result.unwrap();
+                        navigator()
+                            .push(Route::RoomPage {
+                                id: result.room_id().to_owned(),
+                            });
                     });
                 },
                 {"Create chat".to_string()}
@@ -226,9 +226,7 @@ pub fn NewRoom() -> Element {
     rsx! {
         div {
             DropdownMenu {
-                DropdownMenuTrigger {
-                        Plus {}
-                }
+                DropdownMenuTrigger { Plus {} }
                 DropdownMenuContent {
                     DropdownMenuItem {
                         index: 0_usize,
@@ -236,7 +234,7 @@ pub fn NewRoom() -> Element {
                         on_select: move |_: String| {
                             open_create_dm.set(true);
                         },
-                        { "Create chat".to_string() }
+                        {"Create chat".to_string()}
                     }
                     DropdownMenuItem {
                         index: 1_usize,
@@ -244,7 +242,7 @@ pub fn NewRoom() -> Element {
                         on_select: |_: String| {
                             println!("Create space clicked");
                         },
-                        { "Create room".to_string() }
+                        {"Create room".to_string()}
                     }
                 }
             }

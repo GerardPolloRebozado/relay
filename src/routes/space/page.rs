@@ -51,10 +51,14 @@ pub fn SpacePage(id: OwnedRoomId) -> Element {
             match &*space_resource.read_unchecked() {
                 Some(Some(actual_space)) => rsx! {
                     SpaceHeader { space: RoomContainer::new(actual_space.clone()) }
-                    SpaceRoomListPage { space: RoomContainer::new(actual_space.clone())}
+                    SpaceRoomListPage { space: RoomContainer::new(actual_space.clone()) }
                 },
-                Some(None) => rsx! { div { "Redirecting..." } },
-                None => rsx! { Spinner {} }
+                Some(None) => rsx! {
+                    div { "Redirecting..." }
+                },
+                None => rsx! {
+                    Spinner {}
+                },
             }
         }
     }

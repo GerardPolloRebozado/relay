@@ -11,7 +11,7 @@ pub fn GoBackButton() -> Element {
             size: ButtonSize::Icon,
             variant: ButtonVariant::Ghost,
             onclick: |_| navigator().go_back(),
-            ArrowLeft{}
+            ArrowLeft {}
         }
     }
 }

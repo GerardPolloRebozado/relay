@@ -38,23 +38,21 @@ pub fn RoomPage(id: OwnedRoomId) -> Element {
     });
 
     if room.read().is_none() {
-        return rsx! {"Loading..."};
+        return rsx! { "Loading..." };
     }
     let room_for_reject = room.read().clone().unwrap();
     let room_for_accept = room.read().clone().unwrap();
     let room_id = id.clone();
 
     rsx! {
-        div {
-            class: Styles::container,
-            RoomHeader{room_id : id.clone()},
+        div { class: Styles::container,
+            RoomHeader { room_id: id.clone() }
             div { class: Styles::chat_container,
                 RoomTimeline { class: Styles::message_list, room_id: id.clone() }
                 if room_for_reject.state() == RoomState::Joined {
-                    MessageInput {room_id: id }
+                    MessageInput { room_id: id }
                 } else {
-                    div {
-                        class: Styles::invitation_buttons,
+                    div { class: Styles::invitation_buttons,
                         Button {
                             variant: ButtonVariant::Destructive,
                             onclick: move |_evt: MouseEvent| {
@@ -72,7 +70,10 @@ pub fn RoomPage(id: OwnedRoomId) -> Element {
                                 let room_id_clone = room_id.clone();
                                 async move {
                                     let _ = room_clone.join().await;
-                                    navigator().push(Route::RoomPage { id: room_id_clone });
+                                    navigator()
+                                        .push(Route::RoomPage {
+                                            id: room_id_clone,
+                                        });
                                 }
                             },
                             "Accept"

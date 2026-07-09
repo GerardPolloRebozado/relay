@@ -54,23 +54,13 @@ pub fn ImageMessage(payload: ImagePayload) -> Element {
 
     match &*image_resource.read_unchecked() {
         Some(Some(base64_src)) => rsx! {
-            img {
-                src: "{base64_src}",
-                alt: "{img.body}",
-                class: Styles::img,
-            }
+            img { src: "{base64_src}", alt: "{img.body}", class: Styles::img }
         },
         Some(None) => rsx! {
-            span {
-                style: "color: red; font-style: italic;",
-                "[Failed to load image: {img.body}]"
-            }
+            span { style: "color: red; font-style: italic;", "[Failed to load image: {img.body}]" }
         },
         None => rsx! {
-            span {
-                style: "color: gray; font-style: italic;",
-                "[Loading image: {img.body}...]"
-            }
+            span { style: "color: gray; font-style: italic;", "[Loading image: {img.body}...]" }
         },
     }
 }

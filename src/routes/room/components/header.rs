@@ -32,13 +32,14 @@ pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
     rsx! {
         div {
             class: Styles::name_image,
-            onclick: move | _evt: MouseEvent| {
-                navigator().push(Route::RoomSettingsPage{id: cloned_room_id.clone()});
+            onclick: move |_evt: MouseEvent| {
+                navigator()
+                    .push(Route::RoomSettingsPage {
+                        id: cloned_room_id.clone(),
+                    });
             },
-                                GoBackButton{},
-        h2 {
-            "{room_name}"
-        }
+            GoBackButton {}
+            h2 { "{room_name}" }
         }
     }
 }
