@@ -93,13 +93,11 @@ pub async fn fetch_room_info(room: Room, client: Client) -> RoomInfo {
             };
             if let AnySyncTimelineEvent::MessageLike(AnySyncMessageLikeEvent::RoomMessage(msg)) =
                 event
+                && let Some(original_msg) = msg.as_original()
+                && let MessageType::Text(text_msg) = &original_msg.content.msgtype
             {
-                if let Some(original_msg) = msg.as_original() {
-                    if let MessageType::Text(text_msg) = &original_msg.content.msgtype {
-                        last_message = text_msg.body.clone();
-                        break;
-                    }
-                }
+                last_message = text_msg.body.clone();
+                break;
             }
         }
     }
