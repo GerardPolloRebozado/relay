@@ -121,12 +121,9 @@ pub fn Sidebar() -> Element {
                         active: matches!(current_route, Route::Home),
                     }
                 }
-                div {
-                    class: Styles::space_list,
+                div { class: Styles::space_list,
                     for space in space_list.iter() {
-                        SpaceIcon {
-                            space: space.clone(),
-                        }
+                        SpaceIcon { space: space.clone() }
                     }
                 }
                 div { class: Styles::sidebar_bottom,
@@ -189,7 +186,10 @@ fn SpaceIcon(space: SpaceInfo) -> Element {
     rsx! {
         div {
             onclick: move |_| {
-                navigator().push(Route::SpacePage { id: space.id.clone() });
+                navigator()
+                    .push(Route::SpacePage {
+                        id: space.id.clone(),
+                    });
             },
             ImageAvatar {
                 role,
@@ -197,7 +197,7 @@ fn SpaceIcon(space: SpaceInfo) -> Element {
                 size: AvatarImageSize::Medium,
                 shape: AvatarShape::Rounded,
                 src: space.avatar_url,
-                {space.name.get(0..1)},
+                {space.name.get(0..1)}
             }
         }
     }

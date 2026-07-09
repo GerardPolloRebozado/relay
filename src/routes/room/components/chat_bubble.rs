@@ -19,16 +19,10 @@ pub fn ChatBubble(
     rsx! {
         div { class: alignment_class,
             div { class: Styles::message,
-                strong {"{sender}"  }
-                div {
-                {children}
-                }
-                div {
-                    class: Styles::additional_info,
-                p {
-                    class: Styles::event_time,
-                    {time_of_event}
-                }
+                strong { "{sender}" }
+                div { {children} }
+                div { class: Styles::additional_info,
+                    p { class: Styles::event_time, {time_of_event} }
                 }
             }
         }

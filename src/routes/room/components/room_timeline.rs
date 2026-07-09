@@ -64,7 +64,7 @@ pub fn RoomTimeline(
     });
 
     rsx! {
-        div { ..attributes,
+        div {..attributes,
 
             for item in messages.read().iter().rev() {
                 {
@@ -73,15 +73,18 @@ pub fn RoomTimeline(
                         let content = event.content();
 
                         let timestamp = event.timestamp();
-                        let datetime: DateTime<Local> = Local.timestamp_millis_opt(timestamp.0.into()).single().unwrap();
+                        let datetime: DateTime<Local> = Local
+                            .timestamp_millis_opt(timestamp.0.into())
+                            .single()
+                            .unwrap();
                         let time_of_event = datetime.format("%H:%M").to_string();
-
                         let user_id = current_user_id.read().clone().unwrap_or("null".to_string());
                         let is_me = user_id == sender;
-
                         render_timeline_event(content, &sender, is_me, &time_of_event)
                     } else if item.is_date_divider() {
-                        let date_text = if let Some(VirtualTimelineItem::DateDivider(ts)) = item.as_virtual() {
+                        let date_text = if let Some(VirtualTimelineItem::DateDivider(ts)) = item
+                            .as_virtual()
+                        {
                             Utc.timestamp_millis_opt(ts.0.into())
                                 .single()
                                 .map(|d| d.format("%B %e, %Y").to_string())
@@ -90,17 +93,11 @@ pub fn RoomTimeline(
                             "Date Divider".to_string()
                         };
                         rsx! {
-                            div {
-                                class: Styles::date_divider,
-                                "{date_text}"
-                            }
+                            div { class: Styles::date_divider, "{date_text}" }
                         }
                     } else {
                         rsx! {
-                            div {
-                                class: Styles::other_events,
-                                "Other event"
-                            }
+                            div { class: Styles::other_events, "Other event" }
                         }
                     }
                 }

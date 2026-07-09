@@ -9,10 +9,6 @@ pub fn Header(
     children: Element,
 ) -> Element {
     rsx! {
-        div {
-            class: Styles::header,
-            ..attributes,
-            {children}
-        }
+        div { class: Styles::header, ..attributes, {children} }
     }
 }

@@ -46,21 +46,20 @@ pub fn SpaceHeader(space: RoomContainer) -> Element {
     match &*space_info.read_unchecked() {
         Some((name, avatar_url)) => rsx! {
             Header {
-                div {
-                    class: Styles::name_image,
-                    GoBackButton{},
+                div { class: Styles::name_image,
+                    GoBackButton {}
                     ImageAvatar {
                         size: AvatarImageSize::Medium,
                         shape: AvatarShape::Rounded,
                         src: avatar_url,
-                        {name.clone()},
-                    }
-                    h2 {
                         {name.clone()}
                     }
+                    h2 { {name.clone()} }
                 }
             }
         },
-        None => rsx! { Spinner {} },
+        None => rsx! {
+            Spinner {}
+        },
     }
 }

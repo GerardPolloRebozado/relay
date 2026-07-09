@@ -52,13 +52,12 @@ pub fn NameAndRoomImage(id: OwnedRoomId) -> Element {
     });
 
     rsx! {
-        div {
-            class: Styles::name_and_image,
-    ImageAvatar{
-        src: &room_info.read().image_url,
-        size: crate::components::avatar::AvatarImageSize::Large,
-    },
-        "{room_info.read().name}"
-    }
+        div { class: Styles::name_and_image,
+            ImageAvatar {
+                src: &room_info.read().image_url,
+                size: crate::components::avatar::AvatarImageSize::Large,
+            }
+            "{room_info.read().name}"
         }
+    }
 }

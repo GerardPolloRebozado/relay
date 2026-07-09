@@ -19,29 +19,27 @@ pub fn RoomSettingsPage(id: OwnedRoomId) -> Element {
     rsx! {
         div {
             Header {
-                h2 {"Room information"}
-                div {
-                    class: Styles::header_buttons,
+                h2 { "Room information" }
+                div { class: Styles::header_buttons,
                     Button {
                         onclick: move |_| {
                             *show_leave_dialog.write() = true;
                         },
-                        DoorOpen{}
+                        DoorOpen {}
                     }
-                Button {
-                    onclick: |_| {
-                      navigator().go_back();
-                    },
-                    variant: crate::components::button::ButtonVariant::Outline,
-                    X{}
-                }
+                    Button {
+                        onclick: |_| {
+                            navigator().go_back();
+                        },
+                        variant: crate::components::button::ButtonVariant::Outline,
+                        X {}
+                    }
                 }
             }
-            div {
-                class: Styles::container,
-                NameAndRoomImage { id: id.clone() },
-                ParticipantsList { id: id.clone() },
-                LeaveRoomDialog{ id: id.clone(), show_leave_dialog}
+            div { class: Styles::container,
+                NameAndRoomImage { id: id.clone() }
+                ParticipantsList { id: id.clone() }
+                LeaveRoomDialog { id: id.clone(), show_leave_dialog }
             }
         }
     }

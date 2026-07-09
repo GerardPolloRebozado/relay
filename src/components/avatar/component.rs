@@ -141,10 +141,7 @@ pub fn AvatarFallback(props: AvatarFallbackProps) -> Element {
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        avatar::AvatarFallback {
-            attributes: merged,
-            {props.children}
-        }
+        avatar::AvatarFallback { attributes: merged, {props.children} }
     }
 }
 
@@ -194,13 +191,8 @@ pub fn ImageAvatar(props: ImageAvatarProps) -> Element {
             size: props.size,
             shape: props.shape,
             attributes: props.attributes,
-            AvatarImage {
-                src: props.src,
-                alt: props.alt,
-            }
-            AvatarFallback {
-                {props.children}
-            }
+            AvatarImage { src: props.src, alt: props.alt }
+            AvatarFallback { {props.children} }
         }
     }
 }

@@ -37,7 +37,7 @@ pub fn DropdownMenuTrigger(props: DropdownMenuTriggerProps) -> Element {
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        dropdown_menu::DropdownMenuTrigger { as: props.r#as, attributes: merged, {props.children} }
+        dropdown_menu::DropdownMenuTrigger { r#as: props.r#as, attributes: merged, {props.children} }
     }
 }
 

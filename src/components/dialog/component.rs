@@ -20,11 +20,7 @@ pub fn Dialog(props: DialogRootProps) -> Element {
             open: props.open,
             default_open: props.default_open,
             on_open_change: props.on_open_change,
-            dialog::DialogContent {
-                class: None,
-                attributes: merged,
-                {props.children}
-            }
+            dialog::DialogContent { class: None, attributes: merged, {props.children} }
         }
     }
 }
@@ -37,11 +33,7 @@ pub fn DialogTitle(props: DialogTitleProps) -> Element {
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        dialog::DialogTitle {
-            id: props.id,
-            attributes: merged,
-            {props.children}
-        }
+        dialog::DialogTitle { id: props.id, attributes: merged, {props.children} }
     }
 }
 
@@ -53,10 +45,6 @@ pub fn DialogDescription(props: DialogDescriptionProps) -> Element {
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        dialog::DialogDescription {
-            id: props.id,
-            attributes: merged,
-            {props.children}
-        }
+        dialog::DialogDescription { id: props.id, attributes: merged, {props.children} }
     }
 }
