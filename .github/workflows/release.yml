@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   build:
-    name: Build ${{ matrix.platform }}
+    name: Build ${{ matrix.platform }} (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -27,6 +27,9 @@ jobs:
           - platform: android
             os: ubuntu-latest
             target: aarch64-linux-android
+          - platform: android
+            os: ubuntu-latest
+            target: x86_64-linux-android
 
     steps:
       - name: Checkout code
@@ -87,16 +90,57 @@ jobs:
 
       - name: Build Android
         if: matrix.platform == 'android'
-        run: dx bundle --platform android --release
+        run: dx bundle --platform android --release --target ${{ matrix.target }}
+
+      - name: Decode Keystore
+        if: matrix.platform == 'android'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > release.keystore
+
+      - name: Sign APK
+        if: matrix.platform == 'android'
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -V | tail -n 1)
+          echo "Using apksigner: $APKSIGNER"
+          find target/dx/Relay/release -name "*.apk" | while read apk; do
+            echo "Signing $apk..."
+            $APKSIGNER sign --ks release.keystore \
+              --ks-key-alias "$KEY_ALIAS" \
+              --ks-pass pass:"$KEYSTORE_PASSWORD" \
+              --key-pass pass:"$KEY_PASSWORD" \
+              --out "${apk%.apk}-signed.apk" "$apk"
+            mv "${apk%.apk}-signed.apk" "$apk"
+          done
+          rm release.keystore
 
       - name: Prepare Assets
         shell: bash
         run: |
           mkdir -p release_assets
-          find target/dx/Relay/release -type f \( -name "*.msi" -o -name "*.exe" -o -name "*.deb" -o -name "*.appimage" -o -name "*.dmg" -o -name "*.apk" -o -name "*.aab" \) -exec cp {} release_assets/ \;
+          
+          # Rename and copy files under target/dx/Relay/release to release_assets
+          find target/dx/Relay/release -type f | while read file; do
+            ext="${file##*.}"
+            ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+            case "$ext_lower" in
+              msi|exe|deb|appimage|dmg|aab)
+                cp "$file" "release_assets/relay.$ext"
+                ;;
+              apk)
+                cp "$file" "release_assets/relay-${{ matrix.target }}.apk"
+                ;;
+            esac
+          done
 
+          # Package macOS app directory
           find target/dx/Relay/release -name "*.app" -type d | while read app; do
-            zip -r "release_assets/$(basename "$app").zip" "$app"
+            zip -r "release_assets/relay.app.zip" "$app"
           done
 
       - name: Upload Release Assets
