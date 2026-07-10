@@ -108,15 +108,20 @@ jobs:
         run: |
           APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -V | tail -n 1)
           echo "Using apksigner: $APKSIGNER"
-          find target/dx/Relay/release -name "*.apk" | while read apk; do
-            echo "Signing $apk..."
-            $APKSIGNER sign --ks release.keystore \
-              --ks-key-alias "$KEY_ALIAS" \
-              --ks-pass pass:"$KEYSTORE_PASSWORD" \
-              --key-pass pass:"$KEY_PASSWORD" \
-              --out "${apk%.apk}-signed.apk" "$apk"
-            mv "${apk%.apk}-signed.apk" "$apk"
-          done
+          search_dirs=()
+          [ -d target/dx/Relay/release ] && search_dirs+=("target/dx/Relay/release")
+          [ -d target/dx/Relay/bundle ] && search_dirs+=("target/dx/Relay/bundle")
+          if [ ${#search_dirs[@]} -gt 0 ]; then
+            find "${search_dirs[@]}" -name "*.apk" | while read apk; do
+              echo "Signing $apk..."
+              $APKSIGNER sign --ks release.keystore \
+                --ks-key-alias "$KEY_ALIAS" \
+                --ks-pass pass:"$KEYSTORE_PASSWORD" \
+                --key-pass pass:"$KEY_PASSWORD" \
+                --out "${apk%.apk}-signed.apk" "$apk"
+              mv "${apk%.apk}-signed.apk" "$apk"
+            done
+          fi
           rm release.keystore
 
       - name: Prepare Assets
@@ -124,24 +129,30 @@ jobs:
         run: |
           mkdir -p release_assets
           
-          # Rename and copy files under target/dx/Relay/release to release_assets
-          find target/dx/Relay/release -type f | while read file; do
-            ext="${file##*.}"
-            ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
-            case "$ext_lower" in
-              msi|exe|deb|appimage|dmg|aab)
-                cp "$file" "release_assets/relay.$ext"
-                ;;
-              apk)
-                cp "$file" "release_assets/relay-${{ matrix.target }}.apk"
-                ;;
-            esac
-          done
+          # Rename and copy files under release/bundle directories to release_assets
+          search_dirs=()
+          [ -d target/dx/Relay/release ] && search_dirs+=("target/dx/Relay/release")
+          [ -d target/dx/Relay/bundle ] && search_dirs+=("target/dx/Relay/bundle")
+          
+          if [ ${#search_dirs[@]} -gt 0 ]; then
+            find "${search_dirs[@]}" -type f | while read file; do
+              ext="${file##*.}"
+              ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+              case "$ext_lower" in
+                msi|exe|deb|appimage|dmg|aab)
+                  cp "$file" "release_assets/relay.$ext"
+                  ;;
+                apk)
+                  cp "$file" "release_assets/relay-${{ matrix.target }}.apk"
+                  ;;
+              esac
+            done
 
-          # Package macOS app directory
-          find target/dx/Relay/release -name "*.app" -type d | while read app; do
-            zip -r "release_assets/relay.app.zip" "$app"
-          done
+            # Package macOS app directory
+            find "${search_dirs[@]}" -name "*.app" -type d | while read app; do
+              zip -r "release_assets/relay.app.zip" "$app"
+            done
+          fi
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
