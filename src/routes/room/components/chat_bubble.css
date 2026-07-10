@@ -25,4 +25,5 @@
     display: grid;
     justify-content: space-between;
     gap: 1rem;
+    max-width: 80dvw;
 }
