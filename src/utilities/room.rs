@@ -49,12 +49,54 @@ pub async fn room_list_filler(
                     }
                     rooms_list.set(new_list);
                 }
+                matrix_sdk_ui::eyeball_im::VectorDiff::PushFront { value } => {
+                    let room = value.into_inner();
+                    let info = fetch_room_info(room, client.clone()).await;
+                    rooms_list.write().insert(0, info);
+                }
                 matrix_sdk_ui::eyeball_im::VectorDiff::PushBack { value } => {
                     let room = value.into_inner();
-                    if room.is_dm() {
-                        let info = fetch_room_info(room, client.clone()).await;
-                        rooms_list.write().push(info);
+                    let info = fetch_room_info(room, client.clone()).await;
+                    rooms_list.write().push(info);
+                }
+                matrix_sdk_ui::eyeball_im::VectorDiff::Insert { index, value } => {
+                    let room = value.into_inner();
+                    let info = fetch_room_info(room, client.clone()).await;
+                    let mut list = rooms_list.write();
+                    if index <= list.len() {
+                        list.insert(index, info);
+                    } else {
+                        list.push(info);
                     }
+                }
+                matrix_sdk_ui::eyeball_im::VectorDiff::Set { index, value } => {
+                    let room = value.into_inner();
+                    let info = fetch_room_info(room, client.clone()).await;
+                    let mut list = rooms_list.write();
+                    if index < list.len() {
+                        list[index] = info;
+                    }
+                }
+                matrix_sdk_ui::eyeball_im::VectorDiff::Remove { index } => {
+                    let mut list = rooms_list.write();
+                    if index < list.len() {
+                        list.remove(index);
+                    }
+                }
+                matrix_sdk_ui::eyeball_im::VectorDiff::PopFront => {
+                    let mut list = rooms_list.write();
+                    if !list.is_empty() {
+                        list.remove(0);
+                    }
+                }
+                matrix_sdk_ui::eyeball_im::VectorDiff::PopBack => {
+                    rooms_list.write().pop();
+                }
+                matrix_sdk_ui::eyeball_im::VectorDiff::Clear => {
+                    rooms_list.set(Vec::new());
+                }
+                matrix_sdk_ui::eyeball_im::VectorDiff::Truncate { length } => {
+                    rooms_list.write().truncate(length);
                 }
                 matrix_sdk_ui::eyeball_im::VectorDiff::Append { values } => {
                     for item in values {
@@ -63,10 +105,6 @@ pub async fn room_list_filler(
                         rooms_list.write().push(info);
                     }
                 }
-                matrix_sdk_ui::eyeball_im::VectorDiff::Clear => {
-                    rooms_list.set(Vec::new());
-                }
-                _ => {}
             }
             is_loading.set(false);
         }

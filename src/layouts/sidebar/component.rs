@@ -40,69 +40,83 @@ pub fn Sidebar() -> Element {
         // show spaces
         controller.set_filter(Box::new(Box::new(new_filter_space())));
 
+        async fn to_space_info(client: &matrix_sdk::Client, room: matrix_sdk::Room) -> SpaceInfo {
+            let display_name = room.display_name().await;
+            let name = match display_name {
+                Ok(dn) => dn.to_string(),
+                Err(_) => "Unknown Space".to_string(),
+            };
+            let avatar_url = get_room_avatar(client, &room)
+                .await
+                .unwrap_or(String::new());
+            SpaceInfo {
+                id: room.room_id().to_owned(),
+                name,
+                avatar_url,
+            }
+        }
+
         while let Some(diffs) = room_list_stream.next().await {
             for diff in diffs {
                 match diff {
                     matrix_sdk_ui::eyeball_im::VectorDiff::Reset { values } => {
                         let mut new_list = Vec::new();
                         for item in values {
-                            let space = item.into_inner();
-                            let display_name = space.display_name().await;
-                            let name = match display_name {
-                                Ok(dn) => dn.to_string(),
-                                Err(_) => "Unknown Space".to_string(),
-                            };
-                            let avatar_url = get_room_avatar(&client, &space)
-                                .await
-                                .unwrap_or(String::new());
-                            new_list.push(SpaceInfo {
-                                id: space.room_id().to_owned(),
-                                name,
-                                avatar_url,
-                            });
+                            new_list.push(to_space_info(&client, item.into_inner()).await);
                         }
                         space_list.set(new_list);
                     }
+                    matrix_sdk_ui::eyeball_im::VectorDiff::PushFront { value } => {
+                        let info = to_space_info(&client, value.into_inner()).await;
+                        space_list.write().insert(0, info);
+                    }
                     matrix_sdk_ui::eyeball_im::VectorDiff::PushBack { value } => {
-                        let space = value.into_inner();
-                        if space.is_dm() {
-                            let display_name = space.display_name().await;
-                            let name = match display_name {
-                                Ok(dn) => dn.to_string(),
-                                Err(_) => "Unknown Space".to_string(),
-                            };
-                            let avatar_url = get_room_avatar(&client, &space)
-                                .await
-                                .unwrap_or(String::new());
-                            space_list.write().push(SpaceInfo {
-                                id: space.room_id().to_owned(),
-                                name,
-                                avatar_url,
-                            });
+                        let info = to_space_info(&client, value.into_inner()).await;
+                        space_list.write().push(info);
+                    }
+                    matrix_sdk_ui::eyeball_im::VectorDiff::Insert { index, value } => {
+                        let info = to_space_info(&client, value.into_inner()).await;
+                        let mut list = space_list.write();
+                        if index <= list.len() {
+                            list.insert(index, info);
+                        } else {
+                            list.push(info);
                         }
                     }
-                    matrix_sdk_ui::eyeball_im::VectorDiff::Append { values } => {
-                        for item in values {
-                            let space = item.into_inner();
-                            let display_name = space.display_name().await;
-                            let name = match display_name {
-                                Ok(dn) => dn.to_string(),
-                                Err(_) => "Unknown Space".to_string(),
-                            };
-                            let avatar_url = get_room_avatar(&client, &space)
-                                .await
-                                .unwrap_or(String::new());
-                            space_list.write().push(SpaceInfo {
-                                id: space.room_id().to_owned(),
-                                name,
-                                avatar_url,
-                            });
+                    matrix_sdk_ui::eyeball_im::VectorDiff::Set { index, value } => {
+                        let info = to_space_info(&client, value.into_inner()).await;
+                        let mut list = space_list.write();
+                        if index < list.len() {
+                            list[index] = info;
                         }
+                    }
+                    matrix_sdk_ui::eyeball_im::VectorDiff::Remove { index } => {
+                        let mut list = space_list.write();
+                        if index < list.len() {
+                            list.remove(index);
+                        }
+                    }
+                    matrix_sdk_ui::eyeball_im::VectorDiff::PopFront => {
+                        let mut list = space_list.write();
+                        if !list.is_empty() {
+                            list.remove(0);
+                        }
+                    }
+                    matrix_sdk_ui::eyeball_im::VectorDiff::PopBack => {
+                        space_list.write().pop();
                     }
                     matrix_sdk_ui::eyeball_im::VectorDiff::Clear => {
                         space_list.set(Vec::new());
                     }
-                    _ => {}
+                    matrix_sdk_ui::eyeball_im::VectorDiff::Truncate { length } => {
+                        space_list.write().truncate(length);
+                    }
+                    matrix_sdk_ui::eyeball_im::VectorDiff::Append { values } => {
+                        for item in values {
+                            let info = to_space_info(&client, item.into_inner()).await;
+                            space_list.write().push(info);
+                        }
+                    }
                 }
             }
         }

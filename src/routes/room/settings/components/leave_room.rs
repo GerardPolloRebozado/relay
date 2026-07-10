@@ -37,6 +37,17 @@ pub fn LeaveRoomDialog(id: OwnedRoomId, show_leave_dialog: Signal<bool>) -> Elem
                             }
                             let room = room.unwrap();
                             if room.leave().await.is_ok() {
+                                if room.forget().await.is_err() {
+                                    let mut notifications = use_context::<
+                                        notifications::NotificationsState,
+                                    >();
+                                    let new_notification = Notification::new(
+                                        "Error forgetting the room",
+                                        "You have succesfully left the room but it could not been forgeted",
+                                        state::notifications::NotificationType::Error,
+                                    );
+                                    notifications.push(new_notification);
+                                }
                                 navigator().push(Route::Home);
                             } else {
                                 let mut notifications = use_context::<

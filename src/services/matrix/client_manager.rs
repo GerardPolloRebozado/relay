@@ -2,12 +2,12 @@ use crate::services::matrix::storage::{
     clear_storage, load_client_from_storage, save_homeserver_url, save_matrix_session,
     setup_client_builder,
 };
-use matrix_sdk::ruma::UserId;
 use matrix_sdk::Client;
+use matrix_sdk::ruma::UserId;
 use matrix_sdk_ui::room_list_service::{RoomListService, State as RoomListState};
 use matrix_sdk_ui::sync_service::{State as SyncState, SyncService};
 use std::sync::Arc;
-use tokio::sync::{broadcast, RwLock};
+use tokio::sync::{RwLock, broadcast};
 
 #[derive(Clone, Debug)]
 pub enum MatrixEvent {
@@ -50,23 +50,21 @@ impl MatrixManager {
         if let Some(client) = load_client_from_storage().await {
             let mut inner = self.inner.write().await;
             inner.client = Some(client.clone());
-            let _ = self.event_tx.send(MatrixEvent::ClientLoaded(client.clone()));
+            let _ = self
+                .event_tx
+                .send(MatrixEvent::ClientLoaded(client.clone()));
             Some(client)
         } else {
             None
         }
     }
 
-    pub async fn login(
-        &self,
-        user_id: &UserId,
-        password: &str,
-    ) -> Result<Client, String> {
-        let client_builder = setup_client_builder(Client::builder().server_name(user_id.server_name()))
-            .await?;
-        
+    pub async fn login(&self, user_id: &UserId, password: &str) -> Result<Client, String> {
+        let client_builder =
+            setup_client_builder(Client::builder().server_name(user_id.server_name())).await?;
+
         let client = client_builder.build().await.map_err(|e| e.to_string())?;
-        
+
         client
             .matrix_auth()
             .login_username(user_id, password)
@@ -82,8 +80,10 @@ impl MatrixManager {
             let mut inner = self.inner.write().await;
             inner.client = Some(client.clone());
         }
-        let _ = self.event_tx.send(MatrixEvent::ClientLoaded(client.clone()));
-        
+        let _ = self
+            .event_tx
+            .send(MatrixEvent::ClientLoaded(client.clone()));
+
         Ok(client)
     }
 
@@ -122,9 +122,12 @@ impl MatrixManager {
         };
 
         println!("DEBUG: Starting SyncService...");
-        
+
         // Ensure event cache is subscribed to
-        client.event_cache().subscribe().map_err(|e| e.to_string())?;
+        client
+            .event_cache()
+            .subscribe()
+            .map_err(|e| e.to_string())?;
 
         let sync_service = Arc::new(
             SyncService::builder(client.clone())
@@ -132,9 +135,9 @@ impl MatrixManager {
                 .await
                 .map_err(|e| e.to_string())?,
         );
-        
+
         let room_list_service = sync_service.room_list_service();
-        
+
         {
             let mut inner = self.inner.write().await;
             inner.room_list_service = Some(room_list_service.clone());
@@ -143,7 +146,7 @@ impl MatrixManager {
 
         let event_tx = self.event_tx.clone();
         let mut state_stream = sync_service.state();
-        
+
         tokio::spawn(async move {
             while let Some(state) = state_stream.next().await {
                 println!("DEBUG: SyncService state: {:?}", state);
