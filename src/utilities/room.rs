@@ -146,3 +146,11 @@ pub async fn fetch_room_info(room: Room, client: Client) -> RoomInfo {
         last_message,
     }
 }
+
+/// Returns the initials of a room name by splitting by spaces and taking the first letter of each word.
+pub fn room_initials(room_name: String) -> String {
+    room_name
+        .split_whitespace()
+        .map(|word| word.chars().next().unwrap_or_default())
+        .collect()
+}

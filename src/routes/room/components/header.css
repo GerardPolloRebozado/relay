@@ -2,4 +2,19 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+
+    &:hover {
+        background-color: var(--primary-color-2);
+    }
+    border-radius: var(--rounded);
+    padding-left: var(--padding-sm);
+    padding-right: var(--padding-sm);
+    width: 100%;
+    cursor: pointer;
+}
+
+.header_items {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
 }
