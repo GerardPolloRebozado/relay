@@ -7,6 +7,8 @@ title = "Relay"
 
 [bundle]
 identifier = "dev.gerarddupre.relay"
+publisher = "gerardPolloRebozado"
+
 
 
 # include `assets` in web platform
