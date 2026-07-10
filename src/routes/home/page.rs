@@ -62,7 +62,7 @@ pub fn Home() -> Element {
                                     }
                                 } else {
                                     for dminfo in rooms_list.read().iter() {
-                                        RoomCard { dm: dminfo.clone() }
+                                        RoomCard { roomInfo: dminfo.clone() }
                                     }
                                 }
                             }

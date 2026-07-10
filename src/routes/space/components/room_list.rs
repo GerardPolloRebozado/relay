@@ -58,8 +58,8 @@ pub fn SpaceRoomListPage(space: RoomContainer) -> Element {
                                 p { "No conversations found." }
                             }
                         } else {
-                            for dminfo in rooms_list.read().iter() {
-                                RoomCard { dm: dminfo.clone() }
+                            for room in rooms_list.read().iter() {
+                                RoomCard { roomInfo: room.clone() }
                             }
                         }
                     }

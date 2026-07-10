@@ -24,8 +24,8 @@ use matrix_sdk::ruma::api::client::room::create_room::v3::Request as CreateRoomR
 struct Styles;
 
 #[component]
-pub fn RoomCard(dm: RoomInfo) -> Element {
-    let unread_counts = dm.room.unread_notification_counts();
+pub fn RoomCard(roomInfo: RoomInfo) -> Element {
+    let unread_counts = roomInfo.room.unread_notification_counts();
     let notification_count = unread_counts.notification_count;
     let highlight_count = unread_counts.highlight_count;
 
@@ -44,25 +44,25 @@ pub fn RoomCard(dm: RoomInfo) -> Element {
     rsx! {
         Link {
             to: Route::RoomPage {
-                id: dm.room.room_id().to_owned(),
+                id: roomInfo.room.room_id().to_owned(),
             },
             class: "{Styles::room_card}",
             ImageAvatar {
-                src: "{dm.avatar_url}",
-                alt: "{dm.name}",
+                src: "{roomInfo.avatar_url}",
+                alt: "{roomInfo.name}",
                 size: AvatarImageSize::Medium,
-                "{dm.name.chars().next().unwrap_or('?')}"
+                "{roomInfo.name.chars().next().unwrap_or('?')}"
             }
             div { class: Styles::room_details,
                 div { class: Styles::room_header,
-                    h3 { class: Styles::room_title, "{dm.name}" }
+                    h3 { class: Styles::room_title, "{roomInfo.name}" }
                     div { class: Styles::room_meta,
                         if show_badge {
                             Badge { variant: badge_variant, "{badge_text}" }
                         }
                     }
                 }
-                p { class: Styles::room_last_message, "{dm.last_message}" }
+                p { class: Styles::room_last_message, "{roomInfo.last_message}" }
             }
         }
     }
