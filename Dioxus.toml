@@ -5,6 +5,10 @@ name = "Relay"
 # HTML title tag content
 title = "Relay"
 
+[bundle]
+identifier = "dev.gerarddupre.relay"
+
+
 # include `assets` in web platform
 [web.resource]
 # Additional CSS style files
