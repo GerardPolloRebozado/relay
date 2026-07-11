@@ -17,31 +17,33 @@ pub fn SpaceRoomListPage(space: RoomContainer) -> Element {
     let state = use_context::<AppState>();
     let mut rooms_list = use_signal(Vec::<RoomInfo>::new);
     let mut is_loading = use_signal(|| true);
-    let space_id = space.0.room_id().to_owned();
+    let mut space_id_signal = use_signal(|| space.0.room_id().to_owned());
+    if *space_id_signal.read() != *space.0.room_id() {
+        space_id_signal.set(space.0.room_id().to_owned());
+        rooms_list.set(Vec::new());
+        is_loading.set(true);
+    }
 
-    use_future(move || {
-        let space_id_cloned = space_id.clone();
-        async move {
-            let matrix = state.matrix.cloned();
+    use_future(move || async move {
+        let matrix = state.matrix.cloned();
 
-            let client = matrix.client().await.unwrap();
+        let client = matrix.client().await.unwrap();
 
-            let space_service = SpaceService::new(client.clone()).await;
-            let space_filters = space_service.space_filters().await;
-            let space_filter = space_filters
-                .iter()
-                .find(|filter| filter.space_room.room_id == space_id_cloned);
+        let space_service = SpaceService::new(client.clone()).await;
+        let space_filters = space_service.space_filters().await;
+        let space_filter = space_filters
+            .iter()
+            .find(|filter| filter.space_room.room_id == *space_id_signal.read());
 
-            if let Some(filter) = space_filter {
-                room_list_filler(
-                    &mut rooms_list,
-                    Box::new(new_filter_identifiers(filter.descendants.clone())),
-                    &mut is_loading,
-                )
-                .await;
-            }
-            is_loading.set(false);
+        if let Some(filter) = space_filter {
+            room_list_filler(
+                &mut rooms_list,
+                Box::new(new_filter_identifiers(filter.descendants.clone())),
+                &mut is_loading,
+            )
+            .await;
         }
+        is_loading.set(false);
     });
 
     {

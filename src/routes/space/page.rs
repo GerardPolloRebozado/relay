@@ -19,14 +19,18 @@ pub fn SpacePage(id: OwnedRoomId) -> Element {
     let notifications = use_context::<NotificationsState>();
 
     let mut id_signal = use_signal(|| id.clone());
+    let mut is_loading = use_signal(|| false);
+
     if *id_signal.read() != id {
         id_signal.set(id.clone());
+        is_loading.set(true);
     }
 
     let space_resource = use_resource(move || {
         let current_id = id_signal.read().clone();
         let matrix_manager = state.matrix.read().clone();
         let mut notifications = notifications;
+        let mut is_loading = is_loading;
 
         async move {
             let client = matrix_manager.client().await.unwrap();
@@ -42,23 +46,28 @@ pub fn SpacePage(id: OwnedRoomId) -> Element {
                 return None;
             }
 
+            is_loading.set(false);
             _space
         }
     });
 
     rsx! {
         div {
-            match &*space_resource.read_unchecked() {
-                Some(Some(actual_space)) => rsx! {
-                    SpaceHeader { space: RoomContainer::new(actual_space.clone()) }
-                    SpaceRoomListPage { space: RoomContainer::new(actual_space.clone()) }
-                },
-                Some(None) => rsx! {
-                    div { "Redirecting..." }
-                },
-                None => rsx! {
-                    Spinner {}
-                },
+            if *is_loading.read() {
+                Spinner {}
+            } else {
+                match &*space_resource.read_unchecked() {
+                    Some(Some(actual_space)) => rsx! {
+                        SpaceHeader { space: RoomContainer::new(actual_space.clone()) }
+                        SpaceRoomListPage { space: RoomContainer::new(actual_space.clone()) }
+                    },
+                    Some(None) => rsx! {
+                        div { "Redirecting..." }
+                    },
+                    None => rsx! {
+                        Spinner {}
+                    },
+                }
             }
         }
     }

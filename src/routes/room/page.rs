@@ -16,10 +16,11 @@ struct Styles;
 #[component]
 pub fn RoomPage(id: OwnedRoomId) -> Element {
     let mut id_signal = use_signal(|| id.clone());
+    let mut room = use_signal(|| None::<Room>);
     if *id_signal.read() != id {
         id_signal.set(id.clone());
+        room.set(None);
     }
-    let mut room = use_signal(|| None::<Room>);
 
     use_future(move || {
         let value = id_signal.read().clone();
