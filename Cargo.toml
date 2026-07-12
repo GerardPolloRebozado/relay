@@ -21,7 +21,7 @@ sysdirs = "0.9.4"
 matrix-sdk-sqlite = { version = "0.18.0", features = ["bundled"] }
 env_logger = "0.11.11"
 log = "0.4.33"
-rand = "0.9.4"
+rand = "0.9.5"
 hex = "0.4.3"
 keyring-core = "1.0"
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1", default-features = false }
@@ -48,7 +48,6 @@ dbus-secret-service-keyring-store = { version = "1.0.0", features = [
 
 [target.'cfg(target_os = "android")'.dependencies]
 android-native-keyring-store = "1.0"
-
 
 [features]
 default = ["desktop"]

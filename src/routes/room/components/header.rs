@@ -14,7 +14,7 @@ struct Styles;
 #[component]
 pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
     let mut room_name = use_signal(|| "Room".to_string());
-    let mut room_avatar_url = use_signal(|| String::new());
+    let mut room_avatar_url = use_signal(String::new);
     let cloned_room_id = room_id.clone();
 
     use_future(move || {
@@ -51,12 +51,12 @@ pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
                         });
                 },
             ImageAvatar {
-                size: AvatarImageSize::Medium,
+                size: AvatarImageSize::Small,
                 shape: AvatarShape::Rounded,
                 src: room_avatar_url,
                 {room_initials(room_name.read().to_string())}
             }
-            h2 { "{room_name}" }
+            h4 { "{room_name}" }
             }
         }
     }

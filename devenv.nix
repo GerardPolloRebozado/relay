@@ -6,16 +6,25 @@
   ...
 }:
 
+let
+  androidTargets = [
+    "aarch64-linux-android"
+    "x86_64-linux-android"
+  ];
+in
 {
-  # https://devenv.sh/basics/
   env.GREET = "Relay";
 
-  # https://devenv.sh/packages/
+  # --- REMOVED THE MANUAL ANDROID_HOME / NDK_HOME LINES FROM HERE ---
+
   packages = [
     pkgs.pkg-config
     pkgs.zlib
     pkgs.dioxus-cli
     pkgs.openssl
+    pkgs.android-tools
+
+    # Linux Desktop Dev Dependencies
     pkgs.glib
     pkgs.gdk-pixbuf
     pkgs.cairo
@@ -25,43 +34,44 @@
     pkgs.libsoup_3
     pkgs.webkitgtk_4_1
     pkgs.xdotool
+
     pkgs.tailwindcss-language-server
     pkgs.vscode-css-languageserver
-    pkgs.linuxdeploy
+    pkgs.yaml-language-server
+
+    pkgs.cargo-ndk
   ];
 
-  # https://devenv.sh/languages/
-  languages = {
-    rust = {
-      enable = true;
-      # Enables the rust-analyzer component for IDE support
-      components = [
-        "rustc"
-        "cargo"
-        "clippy"
-        "rustfmt"
-        "rust-analyzer"
-      ];
-    };
-
+  languages.rust = {
+    enable = true;
+    channel = "stable"; # Fixes the cross-compilation target issue
+    targets = androidTargets;
+    components = [
+      "rustc"
+      "cargo"
+      "clippy"
+      "rustfmt"
+      "rust-analyzer"
+    ];
   };
 
-  # https://devenv.sh/scripts/
-  scripts.hello.exec = ''
-    export NIX_CFLAGS_COMPILE="-fno-omit-frame-pointer $NIX_CFLAGS_COMPILE"
-    echo "hello from $GREET"
-  '';
+  # Enable Android development tooling (devenv handles the env variables here)
+  android = {
+    enable = true;
+    platforms.version = [
+      "35"
+      "34"
+    ];
+    systemImages.enable = true;
+    emulator = {
+      enable = true;
+    };
+    ndk.enable = true;
+  };
 
-  # https://devenv.sh/basics/
   enterShell = ''
-    hello welcome to relay, have fun coding!
-    cargo --version
-    rustc --version
+    echo "Welcome to Relay!"
+    alias emulator="env -u LD_LIBRARY_PATH emulator"
   '';
 
-  # https://devenv.sh/tests/
-  enterTest = ''
-    echo "Running tests"
-    cargo test
-  '';
 }
