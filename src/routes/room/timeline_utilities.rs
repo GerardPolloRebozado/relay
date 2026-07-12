@@ -1,8 +1,8 @@
 use crate::routes::room::components::ChatBubble;
 use crate::routes::room::message_types::image::{ImageMessage, ImagePayload};
 use dioxus::prelude::*;
-use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk::ruma::events::StateEventContentChange;
+use matrix_sdk::ruma::events::room::message::MessageType;
 use matrix_sdk_ui::timeline::{AnyOtherStateEventContentChange, MsgLikeKind, TimelineItemContent};
 
 pub fn render_timeline_event(
@@ -16,7 +16,7 @@ pub fn render_timeline_event(
             MsgLikeKind::Message(msg) => {
                 let bubble_content = match msg.msgtype() {
                     MessageType::Text(text) => rsx! {
-                        span { "{text.body}" }
+                        p { "{text.body}" }
                     },
                     MessageType::Image(img) => rsx! {
                         ImageMessage { payload: ImagePayload(img.clone()) }

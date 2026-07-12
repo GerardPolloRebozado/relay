@@ -8,16 +8,23 @@ use rand::{TryRngCore, rngs::OsRng};
 use std::path::PathBuf;
 
 fn get_matrix_storage_dir() -> PathBuf {
-    let mut path = sysdirs::data_dir().expect("Could not determine system data directory");
-
-    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    #[cfg(target_os = "android")]
     {
-        path.push("relay");
+        PathBuf::from("/data/data/dev.gerarddupre.relay/files/relay")
     }
+    #[cfg(not(target_os = "android"))]
+    {
+        let mut path = sysdirs::data_dir().expect("Could not determine system data directory");
 
-    path.push("relay");
+        #[cfg(not(target_os = "ios"))]
+        {
+            path.push("relay");
+        }
 
-    path
+        path.push("relay");
+
+        path
+    }
 }
 
 const KEYCHAIN_SERVICE: &str = "com.relay.app";
