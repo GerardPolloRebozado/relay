@@ -1,7 +1,6 @@
 use crate::components::scroll_area::ScrollArea;
 use crate::components::spinner::Spinner;
 use crate::routes::home::components::{NewRoom, RoomCard};
-use crate::routes::home::dm_utilities::RoomInfo;
 use crate::state::app_state::AppState;
 use crate::utilities::room::room_list_filler;
 use dioxus::prelude::*;
@@ -14,9 +13,10 @@ struct Styles;
 
 #[component]
 pub fn Home() -> Element {
-    let state = use_context::<AppState>();
-    let mut rooms_list = use_signal(Vec::<RoomInfo>::new); // (id, name, avatar)
-    let mut is_loading = use_signal(|| true);
+    let mut state = use_context::<AppState>();
+    let has_cached = !state.rooms_list.read().is_empty();
+    let mut rooms_list = use_signal(move || state.rooms_list.read().clone()); // (id, name, avatar)
+    let mut is_loading = use_signal(move || !has_cached);
 
     use_future(move || async move {
         let matrix = state.matrix.cloned();
@@ -39,6 +39,16 @@ pub fn Home() -> Element {
         )
         .await;
         is_loading.set(false);
+    });
+
+    use_effect(move || {
+        let list = rooms_list.read().clone();
+        state.rooms_list.set(list);
+    });
+
+    use_effect(move || {
+        let loading = is_loading.cloned();
+        state.is_rooms_loading.set(loading);
     });
 
     rsx! {

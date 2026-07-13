@@ -15,8 +15,8 @@ struct Styles;
 #[component]
 pub fn Sidebar() -> Element {
     let current_route: Route = use_route();
-    let state = use_context::<AppState>();
-    let mut space_list = use_signal(Vec::<SpaceInfo>::new);
+    let mut state = use_context::<AppState>();
+    let mut space_list = use_signal(move || state.space_list.read().clone());
 
     use_future(move || async move {
         let matrix = state.matrix.cloned();
@@ -120,6 +120,11 @@ pub fn Sidebar() -> Element {
                 }
             }
         }
+    });
+
+    use_effect(move || {
+        let list = space_list.read().clone();
+        state.space_list.set(list);
     });
 
     rsx!(

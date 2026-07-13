@@ -3,7 +3,9 @@ use matrix_sdk::authentication::matrix::MatrixSession;
 use matrix_sdk::config::StoreConfig;
 use matrix_sdk::cross_process_lock::CrossProcessLockConfig;
 use matrix_sdk::{AuthSession, Client, ClientBuilder};
-use matrix_sdk_sqlite::{SqliteCryptoStore, SqliteEventCacheStore, SqliteStateStore};
+use matrix_sdk_sqlite::{
+    SqliteCryptoStore, SqliteEventCacheStore, SqliteMediaStore, SqliteStateStore,
+};
 use rand::{TryRngCore, rngs::OsRng};
 use std::path::PathBuf;
 
@@ -51,11 +53,15 @@ pub async fn load_client_from_storage() -> Option<Client> {
     let event_cache_store = SqliteEventCacheStore::open(storage_dir.clone(), passphrase)
         .await
         .ok()?;
+    let media_store = SqliteMediaStore::open(storage_dir.clone(), passphrase)
+        .await
+        .ok()?;
 
     let store_config = StoreConfig::new(CrossProcessLockConfig::multi_process("relay"))
         .crypto_store(crypto_store)
         .state_store(state_store)
-        .event_cache_store(event_cache_store);
+        .event_cache_store(event_cache_store)
+        .media_store(media_store);
 
     let client = Client::builder()
         .with_encryption_settings(matrix_sdk::encryption::EncryptionSettings {
@@ -140,10 +146,16 @@ pub async fn setup_client_builder(
             .await
             .map_err(|e| format!("Error opening event store: {}", e))?;
 
+    let media_store =
+        SqliteMediaStore::open(storage_dir.clone(), Some(passphrase.as_str()))
+            .await
+            .map_err(|e| format!("Error opening media store: {}", e))?;
+
     let store_config = StoreConfig::new(CrossProcessLockConfig::multi_process("relay"))
         .crypto_store(crypto_store)
         .state_store(state_store)
-        .event_cache_store(event_cache_store);
+        .event_cache_store(event_cache_store)
+        .media_store(media_store);
 
     // TODO: user should be able to enable disable backups
     client_builder = client_builder

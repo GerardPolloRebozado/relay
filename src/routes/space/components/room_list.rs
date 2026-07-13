@@ -4,7 +4,7 @@ use matrix_sdk_ui::{room_list_service::filters::new_filter_identifiers, spaces::
 use crate::{
     components::{scroll_area::ScrollArea, spinner::Spinner},
     custom_types::rooms::RoomContainer,
-    routes::home::{components::RoomCard, dm_utilities::RoomInfo},
+    routes::home::components::RoomCard,
     state::app_state::AppState,
     utilities::room::room_list_filler,
 };
@@ -14,17 +14,28 @@ struct Styles;
 
 #[component]
 pub fn SpaceRoomListPage(space: RoomContainer) -> Element {
-    let state = use_context::<AppState>();
-    let mut rooms_list = use_signal(Vec::<RoomInfo>::new);
-    let mut is_loading = use_signal(|| true);
-    let mut space_id_signal = use_signal(|| space.0.room_id().to_owned());
-    if *space_id_signal.read() != *space.0.room_id() {
-        space_id_signal.set(space.0.room_id().to_owned());
-        rooms_list.set(Vec::new());
-        is_loading.set(true);
+    let mut state = use_context::<AppState>();
+    let space_id = space.0.room_id().to_owned();
+
+    let has_cached = state.space_rooms_map.read().contains_key(&space_id);
+    let space_id_for_init = space_id.clone();
+    let mut rooms_list = use_signal(move || {
+        state.space_rooms_map.read().get(&space_id_for_init).cloned().unwrap_or_default()
+    });
+    let mut is_loading = use_signal(move || !has_cached);
+
+    let space_id_for_signal = space_id.clone();
+    let mut space_id_signal = use_signal(move || space_id_for_signal.clone());
+    if *space_id_signal.read() != space_id {
+        let new_id = space_id.clone();
+        space_id_signal.set(new_id.clone());
+        let new_has_cached = state.space_rooms_map.read().contains_key(&new_id);
+        rooms_list.set(state.space_rooms_map.read().get(&new_id).cloned().unwrap_or_default());
+        is_loading.set(!new_has_cached);
     }
 
     use_future(move || async move {
+        let current_id = space_id_signal.read().clone();
         let matrix = state.matrix.cloned();
 
         let client = matrix.client().await.unwrap();
@@ -33,7 +44,7 @@ pub fn SpaceRoomListPage(space: RoomContainer) -> Element {
         let space_filters = space_service.space_filters().await;
         let space_filter = space_filters
             .iter()
-            .find(|filter| filter.space_room.room_id == *space_id_signal.read());
+            .find(|filter| filter.space_room.room_id == current_id);
 
         if let Some(filter) = space_filter {
             room_list_filler(
@@ -44,6 +55,12 @@ pub fn SpaceRoomListPage(space: RoomContainer) -> Element {
             .await;
         }
         is_loading.set(false);
+    });
+
+    use_effect(move || {
+        let current_id = space_id_signal.read().clone();
+        let list = rooms_list.read().clone();
+        state.space_rooms_map.write().insert(current_id, list);
     });
 
     {
