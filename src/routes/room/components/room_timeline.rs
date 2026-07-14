@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use chrono::{DateTime, Local, TimeZone, Utc};
-use dioxus::prelude::*;
 use dioxus::document::eval;
+use dioxus::prelude::*;
 use futures_util::StreamExt;
 use matrix_sdk::event_cache::PaginationStatus;
 use matrix_sdk::ruma::OwnedRoomId;
@@ -24,7 +24,9 @@ pub fn RoomTimeline(
     let state = use_context::<AppState>();
     let mut messages = use_signal(Vector::<Arc<TimelineItem>>::default);
     let mut current_user_id = use_signal(|| None::<String>);
-    let mut pagination_status = use_signal(|| PaginationStatus::Idle { hit_timeline_start: false });
+    let mut pagination_status = use_signal(|| PaginationStatus::Idle {
+        hit_timeline_start: false,
+    });
 
     use_effect(move || {
         let matrix = state.matrix.cloned();
@@ -34,20 +36,22 @@ pub fn RoomTimeline(
             let client = matrix.client().await;
 
             let Some(client) = client else {
-                eprintln!("Client not found");
+                error!("Client not found");
                 return;
             };
 
             current_user_id.set(Some(client.user_id().unwrap().to_string()));
 
             let Some(room) = client.get_room(&room_id) else {
-                eprintln!("Room not found");
+                error!("Room not found");
                 return;
             };
 
             let timeline = Arc::new(room.timeline_builder().build().await.unwrap());
 
-            if let Some((initial_status, mut status_stream)) = timeline.live_back_pagination_status().await {
+            if let Some((initial_status, mut status_stream)) =
+                timeline.live_back_pagination_status().await
+            {
                 pagination_status.set(initial_status);
                 let mut pagination_status_clone = pagination_status.clone();
                 spawn(async move {
@@ -63,11 +67,12 @@ pub fn RoomTimeline(
             let timeline_clone = timeline.clone();
             spawn(async move {
                 if let Err(e) = timeline_clone.paginate_backwards(20).await {
-                    eprintln!("Error paginating backwards: {:?}", e);
+                    error!("Error paginating backwards: {:?}", e);
                 }
             });
 
-            let mut js_eval = eval(r#"
+            let mut js_eval = eval(
+                r#"
                 const el = document.getElementById("room-timeline");
                 if (el) {
                     el.addEventListener("scroll", () => {
@@ -78,17 +83,21 @@ pub fn RoomTimeline(
                         }
                     });
                 }
-            "#);
+            "#,
+            );
 
             let timeline_for_scroll = timeline.clone();
             spawn(async move {
                 while let Ok(_msg) = js_eval.recv::<String>().await {
                     let current_status = *pagination_status.read();
-                    if let PaginationStatus::Idle { hit_timeline_start: false } = current_status {
+                    if let PaginationStatus::Idle {
+                        hit_timeline_start: false,
+                    } = current_status
+                    {
                         let timeline_back = timeline_for_scroll.clone();
                         spawn(async move {
                             if let Err(e) = timeline_back.paginate_backwards(10).await {
-                                eprintln!("Error paginating backwards: {:?}", e);
+                                error!("Error paginating backwards: {:?}", e);
                             }
                         });
                     }
