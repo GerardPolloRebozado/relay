@@ -9,3 +9,20 @@
     color: lightgray;
     font-size: 0.875rem;
 }
+
+.loading_indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    color: #3b82f6;
+    font-size: 0.875rem;
+    font-weight: 500;
+    gap: 0.5rem;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
