@@ -2,7 +2,9 @@ use std::sync::Arc;
 
 use chrono::{DateTime, Local, TimeZone, Utc};
 use dioxus::prelude::*;
+use dioxus::document::eval;
 use futures_util::StreamExt;
+use matrix_sdk::event_cache::PaginationStatus;
 use matrix_sdk::ruma::OwnedRoomId;
 use matrix_sdk_ui::{
     eyeball_im::Vector,
@@ -22,6 +24,7 @@ pub fn RoomTimeline(
     let state = use_context::<AppState>();
     let mut messages = use_signal(Vector::<Arc<TimelineItem>>::default);
     let mut current_user_id = use_signal(|| None::<String>);
+    let mut pagination_status = use_signal(|| PaginationStatus::Idle { hit_timeline_start: false });
 
     use_effect(move || {
         let matrix = state.matrix.cloned();
@@ -44,6 +47,16 @@ pub fn RoomTimeline(
 
             let timeline = Arc::new(room.timeline_builder().build().await.unwrap());
 
+            if let Some((initial_status, mut status_stream)) = timeline.live_back_pagination_status().await {
+                pagination_status.set(initial_status);
+                let mut pagination_status_clone = pagination_status.clone();
+                spawn(async move {
+                    while let Some(status) = status_stream.next().await {
+                        pagination_status_clone.set(status);
+                    }
+                });
+            }
+
             let (initial_items, mut stream) = timeline.subscribe().await;
             messages.set(initial_items);
 
@@ -51,6 +64,34 @@ pub fn RoomTimeline(
             spawn(async move {
                 if let Err(e) = timeline_clone.paginate_backwards(20).await {
                     eprintln!("Error paginating backwards: {:?}", e);
+                }
+            });
+
+            let mut js_eval = eval(r#"
+                const el = document.getElementById("room-timeline");
+                if (el) {
+                    el.addEventListener("scroll", () => {
+                        const threshold = 50;
+                        const distanceToTop = el.scrollHeight - el.clientHeight + el.scrollTop;
+                        if (el.scrollTop < -10 && distanceToTop < threshold) {
+                            dioxus.send("trigger");
+                        }
+                    });
+                }
+            "#);
+
+            let timeline_for_scroll = timeline.clone();
+            spawn(async move {
+                while let Ok(_msg) = js_eval.recv::<String>().await {
+                    let current_status = *pagination_status.read();
+                    if let PaginationStatus::Idle { hit_timeline_start: false } = current_status {
+                        let timeline_back = timeline_for_scroll.clone();
+                        spawn(async move {
+                            if let Err(e) = timeline_back.paginate_backwards(10).await {
+                                eprintln!("Error paginating backwards: {:?}", e);
+                            }
+                        });
+                    }
                 }
             });
 
@@ -64,7 +105,9 @@ pub fn RoomTimeline(
     });
 
     rsx! {
-        div {..attributes,
+        div {
+            id: "room-timeline",
+            ..attributes,
 
             for item in messages.read().iter().rev() {
                 {
@@ -101,6 +144,10 @@ pub fn RoomTimeline(
                         }
                     }
                 }
+            }
+
+            if let PaginationStatus::Paginating = *pagination_status.read() {
+                div { class: Styles::loading_indicator, "Loading older messages..." }
             }
         }
     }
