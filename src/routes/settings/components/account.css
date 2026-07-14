@@ -1,0 +1,49 @@
+.settings_card {
+    background-color: var(--primary-color-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.account_section {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.account_title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 750;
+    color: var(--foreground);
+    letter-spacing: -0.01em;
+}
+
+.account_description {
+    color: var(--secondary-color-5);
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.logout_button {
+    height: 2.75rem;
+    padding: 0 1.5rem;
+    background-color: var(--primary-error-color);
+    color: var(--contrast-error-color);
+    border-radius: 8px;
+    font-weight: 600;
+    align-self: flex-start;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.logout_button:hover {
+    background-color: var(--secondary-error-color);
+}
+
+.logout_button:active {
+    transform: scale(0.985);
+}

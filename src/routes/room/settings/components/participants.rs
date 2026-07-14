@@ -59,11 +59,11 @@ fn ParticipantCard(user: BasicUserInfo) -> Element {
 #[component]
 pub fn ParticipantsList(id: OwnedRoomId) -> Element {
     let mut user_list = use_signal(Vec::<BasicUserInfo>::new);
+    let state = use_context::<AppState>();
 
     use_future(move || {
         let cloned_id = id.clone();
         async move {
-            let state = use_context::<AppState>();
             let matrix_manager = state.matrix.read().clone();
             let client = matrix_manager.client().await.unwrap();
             let room = client.get_room(&cloned_id);
@@ -75,39 +75,38 @@ pub fn ParticipantsList(id: OwnedRoomId) -> Element {
             let room = room.unwrap();
 
             if let Ok(joined_user_ids) = room.joined_user_ids().await {
+                let mut temp_list = Vec::new();
                 for user_id in joined_user_ids {
                     let profile = room.get_member(&user_id).await;
-                    if profile.is_err() {
-                        error!(" Could not get profile information {}", user_id);
-                        continue;
+                    match profile {
+                        Ok(Some(profile)) => {
+                            let mut avatar_url = String::new();
+                            if let Ok(Some(bytes)) = profile.avatar(MediaFormat::File).await {
+                                avatar_url = encode_to_data_uri(bytes).unwrap_or_default();
+                            }
+                            temp_list.push(BasicUserInfo {
+                                id: user_id.to_string(),
+                                name: profile.name().to_string(),
+                                avatar_url,
+                                role: profile.suggested_role_for_power_level(),
+                            });
+                        }
+                        Ok(None) => {
+                            error!("Could not find profile {}", user_id);
+                        }
+                        Err(e) => {
+                            error!("Could not get profile information {}: {:?}", user_id, e);
+                        }
                     }
-                    let profile = profile.unwrap();
-                    if profile.is_none() {
-                        error!("Could not find profile {}", user_id);
-                        continue;
-                    }
-                    let profile = profile.unwrap();
-
-                    let mut avatar_url = String::new();
-                    if let Ok(bytes) = profile.avatar(MediaFormat::File).await
-                        && let Some(bytes_unwrapped) = bytes
-                    {
-                        avatar_url = encode_to_data_uri(bytes_unwrapped).unwrap_or("".to_string());
-                    }
-                    user_list.write().push(BasicUserInfo {
-                        id: user_id.to_string(),
-                        name: profile.name().to_string(),
-                        avatar_url,
-                        role: profile.suggested_role_for_power_level(),
-                    });
                 }
+                user_list.set(temp_list);
             }
         }
     });
 
     rsx! {
         div { class: Styles::list,
-            {format!("{} participants", user_list.len())}
+            {format!("{} participants", user_list.read().len())}
             for user in user_list.read().iter() {
                 ParticipantCard { user: user.clone() }
             }

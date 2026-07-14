@@ -9,6 +9,7 @@ pub mod utilities;
 
 use crate::routes::router::Route;
 use crate::state::secure_state::init_secure_storage;
+use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
 use log::debug;
 use state::app_state::AppState;
@@ -16,7 +17,15 @@ use state::app_state::AppState;
 fn main() {
     env_logger::init();
     init_secure_storage();
-    launch(App);
+    dioxus::LaunchBuilder::new()
+        .with_cfg(
+            Config::default().with_menu(None).with_window(
+                WindowBuilder::new()
+                    .with_maximized(true)
+                    .with_title("Relay Messaging"),
+            ),
+        )
+        .launch(App);
 }
 
 fn App() -> Element {

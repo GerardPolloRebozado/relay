@@ -24,6 +24,7 @@ dependencies = [
  "matrix-sdk",
  "matrix-sdk-sqlite",
  "matrix-sdk-ui",
+ "mime",
  "mime_guess",
  "rand 0.9.5",
  "regex",
