@@ -118,3 +118,11 @@
 .save_button:active:not(:disabled) {
     transform: scale(0.985);
 }
+
+.matrix_id {
+    font-size: 0.85rem;
+    color: var(--secondary-color-5);
+    margin: -0.5rem 0 0 0;
+    font-family: monospace;
+}
+
