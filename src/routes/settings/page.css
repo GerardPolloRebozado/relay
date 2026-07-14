@@ -1,0 +1,21 @@
+.settings_container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    color: var(--foreground);
+}
+
+.settings_header {
+    margin-bottom: 0.5rem;
+}
+
+.settings_header h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--foreground);
+    margin: 0;
+    letter-spacing: -0.025em;
+}

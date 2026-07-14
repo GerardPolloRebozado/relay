@@ -39,8 +39,7 @@ pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
     });
 
     rsx! {
-        div {
-            class: Styles::header_items,
+        div { class: Styles::header_items,
             GoBackButton {}
             div {
                 class: Styles::name_image,
@@ -50,13 +49,13 @@ pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
                             id: cloned_room_id.clone(),
                         });
                 },
-            ImageAvatar {
-                size: AvatarImageSize::Small,
-                shape: AvatarShape::Rounded,
-                src: room_avatar_url,
-                {room_initials(room_name.read().to_string())}
-            }
-            h4 { "{room_name}" }
+                ImageAvatar {
+                    size: AvatarImageSize::Small,
+                    shape: AvatarShape::Rounded,
+                    src: room_avatar_url,
+                    {room_initials(room_name.read().to_string())}
+                }
+                h4 { "{room_name}" }
             }
         }
     }

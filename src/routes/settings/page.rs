@@ -1,19 +1,18 @@
-use crate::components::button::Button;
-use crate::state::app_state::AppState;
+use crate::routes::settings::components::{AccountCard, ProfileCard};
 use dioxus::prelude::*;
+
+#[css_module("src/routes/settings/page.css")]
+struct Styles;
 
 #[component]
 pub fn Settings() -> Element {
-    let state = use_context::<AppState>();
     rsx! {
-        Button {
-            onclick: move |_| {
-                spawn(async move {
-                    let manager = state.matrix.cloned();
-                    manager.logout().await;
-                });
-            },
-            "Logout"
+        div { class: Styles::settings_container,
+            header { class: Styles::settings_header,
+                h2 { "Settings" }
+            }
+            ProfileCard {}
+            AccountCard {}
         }
     }
 }

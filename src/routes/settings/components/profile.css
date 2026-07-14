@@ -1,0 +1,120 @@
+.settings_card {
+    background-color: var(--primary-color-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.avatar_edit_section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 2rem 0 1rem 0;
+}
+
+.avatar_container {
+    position: relative;
+    padding: 0.1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 3px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    span {
+        width: 10rem !important;
+        height: 10rem !important;
+    }
+}
+
+.avatar_container:hover {
+    transform: scale(1.04);
+    border-color: var(--secondary-color-2);
+}
+
+.avatar_overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.avatar_container:hover .avatar_overlay {
+    opacity: 1;
+}
+
+.hidden_file_input {
+    display: none;
+}
+
+.settings_form {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form_group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input_field {
+    width: 100%;
+    height: 2.75rem;
+    padding: 0 1rem;
+    font-size: 0.95rem;
+    background-color: var(--primary-color-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--foreground);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input_field:focus {
+    border-color: var(--focused-border-color);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--focused-border-color) 20%, transparent);
+    outline: none;
+}
+
+.save_button {
+    margin-top: 0.5rem;
+    width: 100%;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: var(--secondary-color-2);
+    color: #ffffff;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.save_button:hover:not(:disabled) {
+    background-color: var(--secondary-color-3);
+}
+
+.save_button:active:not(:disabled) {
+    transform: scale(0.985);
+}

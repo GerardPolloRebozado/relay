@@ -7,15 +7,14 @@ use crate::{
     state::app_state::AppState,
 };
 
-#[derive(Default)]
 struct RoomInformation {
     pub name: String,
     pub image_url: String,
 }
 
-impl RoomInformation {
+impl Default for RoomInformation {
     fn default() -> Self {
-        RoomInformation {
+        Self {
             name: "Room".to_string(),
             image_url: "/assets/user.svg".to_string(),
         }
@@ -28,11 +27,11 @@ struct Styles;
 #[component]
 pub fn NameAndRoomImage(id: OwnedRoomId) -> Element {
     let mut room_info = use_signal(RoomInformation::default);
+    let state = use_context::<AppState>();
 
     use_future(move || {
         let cloned_id = id.clone();
         async move {
-            let state = use_context::<AppState>();
             let matrix_manager = state.matrix.read().clone();
             let client = matrix_manager.client().await.unwrap();
             let room = client.get_room(&cloned_id);
