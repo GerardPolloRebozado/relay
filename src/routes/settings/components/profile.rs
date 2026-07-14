@@ -1,4 +1,4 @@
-use crate::components::avatar::ImageAvatar;
+use crate::components::avatar::{AvatarImageSize, ImageAvatar};
 use crate::components::button::Button;
 use crate::components::card::*;
 use crate::components::input::Input;
@@ -15,6 +15,13 @@ use matrix_sdk::ruma::media::Method;
 
 #[css_module("src/routes/settings/components/profile.css")]
 struct Styles;
+
+#[derive(Clone)]
+struct UserProfile {
+    pub display_name: Option<String>,
+    pub avatar_url: Option<String>,
+    pub matrix_id: String,
+}
 
 #[component]
 pub fn ProfileCard() -> Element {
@@ -33,6 +40,7 @@ pub fn ProfileCard() -> Element {
             let client = matrix.client().await?;
             let display_name = client.account().get_display_name().await.ok().flatten();
             let avatar_url = client.account().get_avatar_url().await.ok().flatten();
+            let matrix_id = client.user_id().unwrap().to_string();
 
             let mut resolved_avatar = None;
             if let Some(ref mxc) = avatar_url {
@@ -51,23 +59,32 @@ pub fn ProfileCard() -> Element {
                     resolved_avatar = Some(format!("data:image/png;base64,{}", b64));
                 }
             }
-            Some((display_name, resolved_avatar))
+            Some(UserProfile {
+                display_name,
+                avatar_url: resolved_avatar,
+                matrix_id,
+            })
         }
     });
 
-    // Populate display name when loaded
-    if let Some(Some((Some(name), _))) = &*profile_resource.read_unchecked()
-        && display_name().is_empty()
-    {
-        display_name.set(name.clone());
-    }
-
-    let current_avatar_preview = match &*profile_resource.read_unchecked() {
-        Some(Some((_, Some(preview)))) => Some(preview.clone()),
-        _ => None,
+    let Some(Some(profile)) = profile_resource.cloned() else {
+        return rsx! {
+            Card { class: Styles::settings_card,
+                div { class: Styles::avatar_edit_section,
+                    Spinner {}
+                }
+            }
+        };
     };
 
-    let avatar_to_render = selected_avatar_preview().or(current_avatar_preview);
+    // Populate display name when loaded
+    if display_name.read().is_empty() {
+        if let Some(ref name) = profile.display_name {
+            display_name.set(name.clone());
+        }
+    }
+
+    let avatar_to_render = selected_avatar_preview().or(profile.avatar_url.clone());
 
     let initials = display_name()
         .split_whitespace()
@@ -199,10 +216,12 @@ pub fn ProfileCard() -> Element {
                         class: Styles::avatar_container,
                         ImageAvatar {
                             src: avatar_to_render.unwrap_or_default(),
+                            size: AvatarImageSize::Large,
                             "{initials}"
                         }
                         div { class: Styles::avatar_overlay, "Change" }
                     }
+                    p { class: Styles::matrix_id, "{profile.matrix_id}" }
                     input {
                         r#type: "file",
                         id: "avatar-file-input",
@@ -223,6 +242,7 @@ pub fn ProfileCard() -> Element {
                         oninput: move |e: Event<FormData>| display_name.set(e.value()),
                     }
                 }
+
 
                 Button {
                     r#type: "submit",
