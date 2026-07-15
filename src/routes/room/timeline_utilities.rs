@@ -1,5 +1,6 @@
 use crate::routes::room::components::ChatBubble;
 use crate::routes::room::message_types::image::{ImageMessage, ImagePayload};
+use crate::routes::room::message_types::video::{VideoMessage, VideoPayload};
 use dioxus::prelude::*;
 use matrix_sdk::ruma::events::StateEventContentChange;
 use matrix_sdk::ruma::events::room::message::MessageType;
@@ -22,7 +23,7 @@ pub fn render_timeline_event(
                         ImageMessage { payload: ImagePayload(img.clone()) }
                     },
                     MessageType::Video(video) => rsx! {
-                        span { "[Video: {video.body}]" }
+                        VideoMessage { payload: VideoPayload(video.clone()) }
                     },
                     _ => rsx! {
                         span { "[Unsupported File]" }

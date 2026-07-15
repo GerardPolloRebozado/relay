@@ -43,10 +43,10 @@ pub fn RoomCard(roomInfo: RoomInfo) -> Element {
 
     rsx! {
         Link {
+            class: "{Styles::room_card}",
             to: Route::RoomPage {
                 id: roomInfo.room.room_id().to_owned(),
             },
-            class: "{Styles::room_card}",
             ImageAvatar {
                 src: "{roomInfo.avatar_url}",
                 alt: "{roomInfo.name}",

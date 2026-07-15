@@ -11,11 +11,31 @@ let
     "aarch64-linux-android"
     "x86_64-linux-android"
   ];
+  gstreamerPlugins = with pkgs.gst_all_1; [
+    gstreamer
+    gst-plugins-base
+    gst-plugins-good
+    gst-plugins-bad
+    gst-plugins-ugly
+    gst-libav
+  ];
 in
 {
   env.GREET = "Relay";
-
-  # --- REMOVED THE MANUAL ANDROID_HOME / NDK_HOME LINES FROM HERE ---
+  env.GST_PLUGIN_SYSTEM_PATH_1_0 =
+    lib.makeSearchPathOutput "lib" "lib/gstreamer-1.0"
+      gstreamerPlugins;
+  env.GDK_PIXBUF_MODULE_FILE = "${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache";
+  env.XDG_DATA_DIRS = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}:${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}:${pkgs.adwaita-icon-theme}/share:${pkgs.shared-mime-info}/share";
+  android = {
+    enable = true;
+    platforms.version = [
+      "35"
+      "34"
+    ];
+    systemImages.enable = true;
+    ndk.enable = true;
+  };
 
   packages = [
     pkgs.pkg-config
@@ -23,6 +43,10 @@ in
     pkgs.dioxus-cli
     pkgs.openssl
     pkgs.android-tools
+    pkgs.librsvg
+    pkgs.adwaita-icon-theme
+    pkgs.shared-mime-info
+    pkgs.gsettings-desktop-schemas
 
     # Linux Desktop Dev Dependencies
     pkgs.glib
@@ -40,7 +64,8 @@ in
     pkgs.yaml-language-server
 
     pkgs.cargo-ndk
-  ];
+  ]
+  ++ gstreamerPlugins;
 
   languages.rust = {
     enable = true;
@@ -55,21 +80,9 @@ in
     ];
   };
 
-  # Enable Android development tooling (devenv handles the env variables here)
-  android = {
-    enable = true;
-    platforms.version = [
-      "35"
-      "34"
-    ];
-    systemImages.enable = true;
-    emulator = {
-      enable = true;
-    };
-    ndk.enable = true;
-  };
-
   enterShell = ''
+    export ANDROID_NDK_HOME="$ANDROID_NDK_ROOT"
+    mkdir -p .android/tmp
     echo "Welcome to Relay!"
     alias emulator="env -u LD_LIBRARY_PATH emulator"
   '';

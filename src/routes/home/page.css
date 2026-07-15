@@ -1,13 +1,16 @@
 .home_container {
-    padding: 2.5rem;
+    padding: 0rem min(1rem, 1.2dvw);
     max-width: 1000px;
     margin: 0 auto;
+    overflow-y: hidden;
 }
 
 .room_list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    overflow-y: auto;
+    max-height: 80dvh;
 }
 
 .empty_state {
