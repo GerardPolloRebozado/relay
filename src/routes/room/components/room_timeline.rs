@@ -53,7 +53,7 @@ pub fn RoomTimeline(
                 timeline.live_back_pagination_status().await
             {
                 pagination_status.set(initial_status);
-                let mut pagination_status_clone = pagination_status.clone();
+                let mut pagination_status_clone = pagination_status;
                 spawn(async move {
                     while let Some(status) = status_stream.next().await {
                         pagination_status_clone.set(status);
@@ -114,9 +114,7 @@ pub fn RoomTimeline(
     });
 
     rsx! {
-        div {
-            id: "room-timeline",
-            ..attributes,
+        div { id: "room-timeline", ..attributes,
 
             for item in messages.read().iter().rev() {
                 {

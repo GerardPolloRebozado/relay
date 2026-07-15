@@ -146,10 +146,9 @@ pub async fn setup_client_builder(
             .await
             .map_err(|e| format!("Error opening event store: {}", e))?;
 
-    let media_store =
-        SqliteMediaStore::open(storage_dir.clone(), Some(passphrase.as_str()))
-            .await
-            .map_err(|e| format!("Error opening media store: {}", e))?;
+    let media_store = SqliteMediaStore::open(storage_dir.clone(), Some(passphrase.as_str()))
+        .await
+        .map_err(|e| format!("Error opening media store: {}", e))?;
 
     let store_config = StoreConfig::new(CrossProcessLockConfig::multi_process("relay"))
         .crypto_store(crypto_store)

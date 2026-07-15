@@ -15,6 +15,8 @@
 
 .header_items {
     display: flex;
+    position: absolute;
+    top: 0px;
     align-items: center;
     gap: 2rem;
 }

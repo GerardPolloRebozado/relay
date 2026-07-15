@@ -70,9 +70,7 @@ pub fn ProfileCard() -> Element {
     let Some(Some(profile)) = profile_resource.cloned() else {
         return rsx! {
             Card { class: Styles::settings_card,
-                div { class: Styles::avatar_edit_section,
-                    Spinner {}
-                }
+                div { class: Styles::avatar_edit_section, Spinner {} }
             }
         };
     };
@@ -242,7 +240,6 @@ pub fn ProfileCard() -> Element {
                         oninput: move |e: Event<FormData>| display_name.set(e.value()),
                     }
                 }
-
 
                 Button {
                     r#type: "submit",

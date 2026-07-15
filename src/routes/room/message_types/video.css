@@ -1,0 +1,86 @@
+.play_overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    max-width: 50dvw;
+    max-height: 50dvh;
+    min-height: 120px;
+    background: linear-gradient(135deg, rgba(15, 15, 20, 0.95), rgba(25, 25, 35, 0.9));
+    border-radius: 12px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: background 0.2s ease;
+    user-select: none;
+}
+
+.play_overlay:hover {
+    background: linear-gradient(135deg, rgba(25, 25, 35, 0.95), rgba(40, 40, 55, 0.9));
+}
+
+.play_button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.play_overlay:hover .play_button {
+    background: rgba(255, 255, 255, 0.22);
+    transform: scale(1.06);
+}
+
+.play_icon {
+    width: 0;
+    height: 0;
+    margin-left: 5px;
+    border-style: solid;
+    border-width: 13px 0 13px 24px;
+    border-color: transparent transparent transparent rgba(255, 255, 255, 0.9);
+}
+
+.duration {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.65);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-top-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    animation: video-spin 0.7s linear infinite;
+}
+
+@keyframes video-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.video {
+    max-width: 50dvw;
+    max-height: 50dvh;
+    border-radius: 12px;
+}
+
+.error_text {
+    color: rgba(255, 100, 100, 0.85);
+    font-style: italic;
+    font-size: 0.875rem;
+}

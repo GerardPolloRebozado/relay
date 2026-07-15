@@ -1,4 +1,3 @@
-use crate::components::scroll_area::ScrollArea;
 use crate::components::spinner::Spinner;
 use crate::routes::home::components::{NewRoom, RoomCard};
 use crate::state::app_state::AppState;
@@ -64,7 +63,6 @@ pub fn Home() -> Element {
                     }
                 } else {
                     rsx! {
-                        ScrollArea {
                             div { class: Styles::room_list,
                                 if rooms_list.read().is_empty() {
                                     div { class: Styles::empty_state,
@@ -75,7 +73,6 @@ pub fn Home() -> Element {
                                         RoomCard { roomInfo: dminfo.clone() }
                                     }
                                 }
-                            }
                         }
                     }
                 }

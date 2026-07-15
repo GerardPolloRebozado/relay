@@ -22,12 +22,9 @@
     align-items: center;
     padding: 1rem 1.25rem;
     border-radius: 0.75rem;
-    background-color: var(--light, var(--primary-color-2)) var(--dark, var(--primary-color-3));
-    border: 1px solid var(--light, var(--primary-color-6)) var(--dark, var(--primary-color-5));
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
     cursor: pointer;
     text-decoration: none;
-    color: inherit;
     gap: 1rem;
     box-shadow: var(--shadow-sm);
 }
