@@ -1,7 +1,7 @@
 use crate::state::app_state::AppState;
 use dioxus::prelude::*;
 use matrix_sdk::{
-    media::{MediaFormat, MediaRequestParameters},
+    media::MediaFormat,
     ruma::{events::room::message::VideoMessageEventContent, events::room::MediaSource},
 };
 use std::sync::Arc;
@@ -98,12 +98,12 @@ pub fn VideoMessage(payload: VideoPayload) -> Element {
 
                 // Download and decrypt from Matrix server
                 if let Some(client) = matrix.client().await {
-                    let request = MediaRequestParameters {
-                        source: video.source.clone(),
-                        format: MediaFormat::File,
-                    };
-                    if let Ok(content) =
-                        client.media().get_media_content(&request, true).await
+                    if let Some(content) = crate::utilities::media::fetch_media_bytes(
+                        &client,
+                        video.source.clone(),
+                        MediaFormat::File,
+                    )
+                    .await
                     {
                         {
                             let mut cache =

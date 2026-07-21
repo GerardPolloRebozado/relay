@@ -6,7 +6,7 @@ use crate::components::label::Label;
 use crate::components::spinner::Spinner;
 use crate::state::app_state::AppState;
 use crate::state::notifications::{Notification, NotificationType, NotificationsState};
-use crate::utilities::media::{AvatarSize, get_user_profile_avatar};
+use crate::utilities::media::{AvatarSize, get_user_avatar};
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use dioxus::html::FileData;
 use dioxus::prelude::*;
@@ -36,9 +36,10 @@ pub fn ProfileCard() -> Element {
         let matrix = state.matrix.cloned();
         async move {
             let client = matrix.client().await?;
+            let user_id = client.user_id()?;
             let display_name = client.account().get_display_name().await.ok().flatten();
-            let resolved_avatar = get_user_profile_avatar(&client, AvatarSize::Large).await;
-            let matrix_id = client.user_id().unwrap().to_string();
+            let resolved_avatar = get_user_avatar(&client, user_id, AvatarSize::Large).await;
+            let matrix_id = user_id.to_string();
 
             Some(UserProfile {
                 display_name,

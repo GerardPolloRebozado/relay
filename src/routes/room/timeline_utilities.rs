@@ -1,6 +1,8 @@
 use crate::routes::room::components::ChatBubble;
 use crate::routes::room::message_types::image::{ImageMessage, ImagePayload};
 use crate::routes::room::message_types::video::{VideoMessage, VideoPayload};
+use crate::state::app_state::AppState;
+use crate::utilities::media::{ImageSize, fetch_media_data_uri};
 use dioxus::prelude::*;
 use matrix_sdk::ruma::events::StateEventContentChange;
 use matrix_sdk::ruma::events::room::message::MessageType;
@@ -26,7 +28,7 @@ pub fn render_timeline_event(
                         VideoMessage { payload: VideoPayload(video.clone()) }
                     },
                     _ => rsx! {
-                        span { "[Unsupported File]" }
+                        p { style: "font-style: italic; color: gray;", "[Unsupported message type]" }
                     },
                 };
                 rsx! {
@@ -38,13 +40,30 @@ pub fn render_timeline_event(
                     }
                 }
             }
-            MsgLikeKind::Sticker(_) => {
+            MsgLikeKind::Sticker(sticker) => {
+                let state = use_context::<AppState>();
+                let sticker_uri = sticker.content().source.clone();
+                let sticker_bytes = use_resource(move || {
+                    let sticker_uri_clone = sticker_uri.clone();
+                    async move {
+                        let manager = state.matrix.read().clone();
+                        let client = manager.client().await.unwrap();
+                        return fetch_media_data_uri(
+                            &client,
+                            sticker_uri_clone.clone(),
+                            ImageSize::VerySmall,
+                        )
+                        .await
+                        .unwrap_or_default();
+                    }
+                });
+
                 rsx! {
                     ChatBubble {
                         sender: sender.to_string(),
                         is_me,
                         time_of_event: time_of_event.to_string(),
-                        span { style: "font-style: italic; color: gray;", "[Sticker]" }
+                        img { src: sticker_bytes }
                     }
                 }
             }

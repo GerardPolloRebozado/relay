@@ -1,10 +1,6 @@
-use crate::state::app_state::AppState;
-use base64::{engine::general_purpose::STANDARD, Engine as _};
+use crate::{state::app_state::AppState, utilities::media::get_media_data_uri};
 use dioxus::prelude::*;
-use matrix_sdk::{
-    media::{MediaFormat, MediaRequestParameters},
-    ruma::events::room::message::ImageMessageEventContent,
-};
+use matrix_sdk::ruma::events::room::message::ImageMessageEventContent;
 
 #[css_module("/src/routes/room/message_types/image.css")]
 struct Styles;
@@ -23,30 +19,15 @@ pub fn ImageMessage(payload: ImagePayload) -> Element {
     let img = payload.0;
     let img_clone = img.clone();
 
-    let mime_type = img
-        .info
-        .as_ref()
-        .and_then(|info| info.mimetype.clone())
-        .unwrap_or_else(|| "image/png".to_string());
-
     let image_resource = use_resource(move || {
         let source = img_clone.source.clone();
-        let mime = mime_type.clone();
 
         async move {
             let state = use_context::<AppState>();
             let matrix = state.matrix.cloned();
 
             if let Some(client) = matrix.client().await {
-                let request = MediaRequestParameters {
-                    source,
-                    format: MediaFormat::File,
-                };
-
-                if let Ok(img_content) = client.media().get_media_content(&request, true).await {
-                    let base64_string = STANDARD.encode(img_content);
-                    return Some(format!("data:{};base64,{}", mime, base64_string));
-                }
+                return get_media_data_uri(&client, source).await;
             }
             None
         }

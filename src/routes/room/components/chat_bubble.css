@@ -26,4 +26,5 @@
     justify-content: space-between;
     gap: 0.2rem;
     max-width: 80dvw;
+    overflow-wrap: anywhere;
 }
