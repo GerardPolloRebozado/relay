@@ -1,16 +1,19 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use chrono::{DateTime, Local, TimeZone, Utc};
 use dioxus::document::eval;
 use dioxus::prelude::*;
 use futures_util::StreamExt;
-use matrix_sdk::event_cache::PaginationStatus;
-use matrix_sdk::ruma::OwnedRoomId;
+use matrix_sdk::ruma::{OwnedEventId, OwnedRoomId};
+use matrix_sdk::{event_cache::PaginationStatus, ruma::OwnedUserId};
 use matrix_sdk_ui::{
     eyeball_im::Vector,
     timeline::{RoomExt, TimelineItem, VirtualTimelineItem},
 };
 
+use crate::routes::room::components::ReadReceipt;
+use crate::routes::room::settings::components::participants;
 use crate::{routes::room::timeline_utilities::render_timeline_event, state::app_state::AppState};
 
 #[css_module("src/routes/room/components/room_timeline.css")]
@@ -27,6 +30,7 @@ pub fn RoomTimeline(
     let mut pagination_status = use_signal(|| PaginationStatus::Idle {
         hit_timeline_start: false,
     });
+    let mut last_messages_read = use_signal(HashMap::<OwnedEventId, Vec<OwnedUserId>>::new);
 
     use_effect(move || {
         let matrix = state.matrix.cloned();
@@ -48,6 +52,30 @@ pub fn RoomTimeline(
             };
 
             let timeline = Arc::new(room.timeline_builder().build().await.unwrap());
+
+            if let Ok(participants) = room.joined_user_ids().await {
+                for p in participants {
+                    let read_receipt = timeline.latest_user_read_receipt(&p).await;
+                    if read_receipt.is_none() {
+                        continue;
+                    }
+                    let receipt = read_receipt.unwrap();
+                    let user_id_clone = p.clone();
+                    let event_id_clone = &receipt.0.clone();
+                    if last_messages_read.read().contains_key(&receipt.0.clone()) {
+                        let mut existing_users = last_messages_read.read()[event_id_clone].clone();
+                        existing_users.push(user_id_clone);
+
+                        last_messages_read
+                            .write()
+                            .insert(event_id_clone.clone(), existing_users);
+                    } else {
+                        last_messages_read
+                            .write()
+                            .insert(receipt.0.clone(), vec![user_id_clone]);
+                    }
+                }
+            }
 
             if let Some((initial_status, mut status_stream)) =
                 timeline.live_back_pagination_status().await
@@ -130,7 +158,20 @@ pub fn RoomTimeline(
                         let time_of_event = datetime.format("%H:%M").to_string();
                         let user_id = current_user_id.read().clone().unwrap_or("null".to_string());
                         let is_me = user_id == sender;
-                        render_timeline_event(content, &sender, is_me, &time_of_event)
+
+                        let event_id = event.event_id().map(|id| id.to_owned());
+                        let user_ids = event_id
+                            .and_then(|id| { last_messages_read.read().get(&id).cloned() });
+                        rsx! {
+                            if let Some(ids) = user_ids {
+                                div { class: Styles::receipt_container,
+                                    for id in ids {
+                                        ReadReceipt { key: "{id}", user_id: id }
+                                    }
+                                }
+                            }
+                            {render_timeline_event(content, &sender, is_me, &time_of_event)}
+                        }
                     } else if item.is_date_divider() {
                         let date_text = if let Some(VirtualTimelineItem::DateDivider(ts)) = item
                             .as_virtual()

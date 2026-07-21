@@ -3,8 +3,9 @@ use matrix_sdk::ruma::OwnedRoomId;
 
 use crate::{
     components::avatar::ImageAvatar,
-    routes::{home::dm_utilities::get_room_avatar, router::Route},
+    routes::router::Route,
     state::app_state::AppState,
+    utilities::media::{AvatarSize, get_room_avatar},
 };
 
 struct RoomInformation {
@@ -44,7 +45,7 @@ pub fn NameAndRoomImage(id: OwnedRoomId) -> Element {
             if let Ok(display_name) = room.display_name().await {
                 room_info.write().name = display_name.to_string();
             }
-            if let Some(room_image) = get_room_avatar(&client, &room).await {
+            if let Some(room_image) = get_room_avatar(&client, &room, AvatarSize::Large).await {
                 room_info.write().image_url = room_image;
             }
         }

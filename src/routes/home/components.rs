@@ -11,7 +11,7 @@ use crate::{
     },
     routes::router::Route,
     state::app_state::AppState,
-    utilities::media::get_img,
+    utilities::media::{AvatarSize, get_mxc_avatar},
 };
 use dioxus::prelude::*;
 use dioxus_icons::lucide::Plus;
@@ -100,7 +100,7 @@ pub fn NewRoomModal(mut open: Signal<bool>) -> Element {
             for user in response.results {
                 let user_id = user.user_id.to_string();
                 let avatar_url = if let Some(url) = user.avatar_url {
-                    get_img(url).await
+                    get_mxc_avatar(&client, &url, AvatarSize::Small).await
                 } else {
                     None
                 };

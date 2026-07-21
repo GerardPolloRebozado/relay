@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use matrix_sdk::ruma::OwnedRoomId;
 
 use crate::components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar};
-use crate::routes::home::dm_utilities::get_room_avatar;
+use crate::utilities::media::{AvatarSize, get_room_avatar};
 use crate::utilities::room::room_initials;
 use crate::{routes::router::Route, state::app_state::AppState};
 
@@ -32,7 +32,7 @@ pub fn RoomHeader(room_id: OwnedRoomId) -> Element {
             if let Ok(display_name) = room.clone().unwrap().display_name().await {
                 *room_name.write() = display_name.to_string();
             }
-            if let Some(avatar_url) = get_room_avatar(&client, &room.clone().unwrap()).await {
+            if let Some(avatar_url) = get_room_avatar(&client, &room.clone().unwrap(), AvatarSize::Medium).await {
                 room_avatar_url.set(avatar_url);
             }
         }

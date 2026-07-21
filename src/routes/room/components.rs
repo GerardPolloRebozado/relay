@@ -6,3 +6,5 @@ pub mod room_timeline;
 pub use room_timeline::*;
 pub mod message_input;
 pub use message_input::*;
+pub use read_receipt::*;
+pub mod read_receipt;

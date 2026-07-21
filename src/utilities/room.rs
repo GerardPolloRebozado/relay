@@ -5,10 +5,11 @@ use matrix_sdk_ui::room_list_service::filters::BoxedFilterFn;
 
 use crate::{
     routes::{
-        home::dm_utilities::{RoomInfo, get_last_message_in_room, get_room_avatar},
+        home::dm_utilities::{RoomInfo, get_last_message_in_room},
         router::Route,
     },
     state::app_state::AppState,
+    utilities::media::{AvatarSize, get_room_avatar},
 };
 
 pub async fn room_list_filler(
@@ -120,9 +121,9 @@ pub async fn fetch_room_info(room: Room, client: Client) -> RoomInfo {
         Ok(dn) => dn.to_string(),
         Err(_) => "Unknown Room".to_string(),
     };
-    let avatar_url = get_room_avatar(&client, &room)
+    let avatar_url = get_room_avatar(&client, &room, AvatarSize::Small)
         .await
-        .unwrap_or_else(String::new);
+        .unwrap_or_default();
     let mut last_message = String::new();
     if let Some(option_last_message) = get_last_message_in_room(&room).await {
         for timeline_event in option_last_message.chunk {
