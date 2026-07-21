@@ -63,16 +63,16 @@ pub fn Home() -> Element {
                     }
                 } else {
                     rsx! {
-                            div { class: Styles::room_list,
-                                if rooms_list.read().is_empty() {
-                                    div { class: Styles::empty_state,
-                                        p { "No conversations found." }
-                                    }
-                                } else {
-                                    for dminfo in rooms_list.read().iter() {
-                                        RoomCard { roomInfo: dminfo.clone() }
-                                    }
+                        div { class: Styles::room_list,
+                            if rooms_list.read().is_empty() {
+                                div { class: Styles::empty_state,
+                                    p { "No conversations found." }
                                 }
+                            } else {
+                                for dminfo in rooms_list.read().iter() {
+                                    RoomCard { roomInfo: dminfo.clone() }
+                                }
+                            }
                         }
                     }
                 }

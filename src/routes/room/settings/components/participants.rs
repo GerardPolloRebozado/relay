@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use matrix_sdk::{media::MediaFormat, room::RoomMemberRole, ruma::OwnedRoomId};
+use matrix_sdk::{room::RoomMemberRole, ruma::OwnedRoomId};
 
 use crate::{
     components::{
@@ -9,7 +9,7 @@ use crate::{
     },
     routes::router::Route,
     state::app_state::AppState,
-    utilities::media::encode_to_data_uri,
+    utilities::media::{AvatarSize, get_member_avatar},
 };
 
 #[css_module("src/routes/room/settings/components/participants.css")]
@@ -80,10 +80,7 @@ pub fn ParticipantsList(id: OwnedRoomId) -> Element {
                     let profile = room.get_member(&user_id).await;
                     match profile {
                         Ok(Some(profile)) => {
-                            let mut avatar_url = String::new();
-                            if let Ok(Some(bytes)) = profile.avatar(MediaFormat::File).await {
-                                avatar_url = encode_to_data_uri(bytes).unwrap_or_default();
-                            }
+                            let avatar_url = get_member_avatar(&profile, AvatarSize::Medium).await.unwrap_or_default();
                             temp_list.push(BasicUserInfo {
                                 id: user_id.to_string(),
                                 name: profile.name().to_string(),

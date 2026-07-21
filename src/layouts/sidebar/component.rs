@@ -1,8 +1,9 @@
 use crate::{
     components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar},
     custom_types::rooms::SpaceInfo,
-    routes::{home::dm_utilities::get_room_avatar, router::Route},
+    routes::router::Route,
     state::app_state::AppState,
+    utilities::media::{AvatarSize, get_room_avatar},
 };
 use dioxus::prelude::*;
 use dioxus_icons::lucide::{House, Settings};
@@ -46,9 +47,9 @@ pub fn Sidebar() -> Element {
                 Ok(dn) => dn.to_string(),
                 Err(_) => "Unknown Space".to_string(),
             };
-            let avatar_url = get_room_avatar(client, &room)
+            let avatar_url = get_room_avatar(client, &room, AvatarSize::Small)
                 .await
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             SpaceInfo {
                 id: room.room_id().to_owned(),
                 name,

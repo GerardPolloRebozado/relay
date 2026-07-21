@@ -2,9 +2,9 @@ use crate::components::avatar::{AvatarImageSize, AvatarShape, ImageAvatar};
 use crate::components::go_back::GoBackButton;
 use crate::components::header::Header;
 use crate::components::spinner::Spinner;
-use crate::routes::home::dm_utilities::get_room_avatar;
 use crate::routes::router::Route;
 use crate::state::app_state::AppState;
+use crate::utilities::media::{AvatarSize, get_room_avatar};
 use dioxus::prelude::*;
 use matrix_sdk::ruma::room::RoomType;
 
@@ -32,9 +32,9 @@ pub fn SpaceHeader(space: RoomContainer) -> Element {
                 Ok(dn) => dn.to_string(),
                 Err(_) => "Unknown Space".to_string(),
             };
-            let avatar_url = get_room_avatar(&client, &_cloned_space.0)
+            let avatar_url = get_room_avatar(&client, &_cloned_space.0, AvatarSize::Large)
                 .await
-                .unwrap_or(String::new());
+                .unwrap_or_default();
             (name, avatar_url)
         }
     });

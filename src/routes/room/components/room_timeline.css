@@ -26,3 +26,10 @@
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
+
+.receipt_container {
+    display: flex;
+    max-width: 50dvw;
+    min-height: 64px;
+    overflow-x: auto;
+}

@@ -6,12 +6,10 @@ use crate::components::label::Label;
 use crate::components::spinner::Spinner;
 use crate::state::app_state::AppState;
 use crate::state::notifications::{Notification, NotificationType, NotificationsState};
+use crate::utilities::media::{AvatarSize, get_user_profile_avatar};
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use dioxus::html::FileData;
 use dioxus::prelude::*;
-use matrix_sdk::media::{MediaFormat, MediaRequestParameters, MediaThumbnailSettings};
-use matrix_sdk::ruma::events::room::MediaSource;
-use matrix_sdk::ruma::media::Method;
 
 #[css_module("src/routes/settings/components/profile.css")]
 struct Styles;
@@ -39,26 +37,9 @@ pub fn ProfileCard() -> Element {
         async move {
             let client = matrix.client().await?;
             let display_name = client.account().get_display_name().await.ok().flatten();
-            let avatar_url = client.account().get_avatar_url().await.ok().flatten();
+            let resolved_avatar = get_user_profile_avatar(&client, AvatarSize::Large).await;
             let matrix_id = client.user_id().unwrap().to_string();
 
-            let mut resolved_avatar = None;
-            if let Some(ref mxc) = avatar_url {
-                let format = MediaFormat::Thumbnail(MediaThumbnailSettings {
-                    method: Method::Crop,
-                    width: 100u32.into(),
-                    height: 100u32.into(),
-                    animated: false,
-                });
-                let request = MediaRequestParameters {
-                    source: MediaSource::Plain(mxc.clone()),
-                    format,
-                };
-                if let Ok(bytes) = client.media().get_media_content(&request, true).await {
-                    let b64 = STANDARD.encode(bytes);
-                    resolved_avatar = Some(format!("data:image/png;base64,{}", b64));
-                }
-            }
             Some(UserProfile {
                 display_name,
                 avatar_url: resolved_avatar,
@@ -76,10 +57,10 @@ pub fn ProfileCard() -> Element {
     };
 
     // Populate display name when loaded
-    if display_name.read().is_empty() {
-        if let Some(ref name) = profile.display_name {
-            display_name.set(name.clone());
-        }
+    if display_name.read().is_empty()
+        && let Some(ref name) = profile.display_name
+    {
+        display_name.set(name.clone());
     }
 
     let avatar_to_render = selected_avatar_preview().or(profile.avatar_url.clone());
